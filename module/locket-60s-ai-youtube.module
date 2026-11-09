@@ -1,0 +1,43 @@
+#!name=Locket 60s AI + YouTube - Huy Hoang
+#!desc=Personal Locket 60s + YouTube + experimental input-image response. This does not generate a new AI image.
+#!author=Huy Hoang (combined); YouTube scripts: Maasea/sgmodule (Apache-2.0)
+# Locket source: https://github.com/nghhoag05-art/Locket-60s/tree/main/Locket_Only_60s_Full
+# YouTube rules source: https://github.com/nghhoag05-art/Locket-Custom-Personal-huyhoang/blob/main/module/locket-youtube-huyhoang.module
+# Upstream YouTube scripts were tested for Surge; Shadowrocket device testing is still required.
+# Upstream youtube.request.js may redirect initplayback to init-stream.maasea.workers.dev.
+
+[Rule]
+# AI experiment: route the two generation hosts through HTTP processing.
+AND,((DOMAIN,api.locketcamera.com),(PROTOCOL,UDP)),REJECT
+AND,((DOMAIN,us-central1-locket-4252a.cloudfunctions.net),(PROTOCOL,UDP)),REJECT
+# YouTube: block UDP/QUIC so HTTPS processing can apply.
+AND,((DOMAIN-SUFFIX,googlevideo.com),(PROTOCOL,UDP)),REJECT
+AND,((DOMAIN,youtubei.googleapis.com),(PROTOCOL,UDP)),REJECT
+
+[Url Rewrite]
+# YouTube URL rules retained from the requested source.
+# The source's ctier rewrite was omitted because it requires a literal ',ctier,' in the URL.
+^https?:\/\/[\w-]+\.googlevideo\.com\/(?!(dclk_video_ads|videoplayback\?)).+&oad _ reject-200
+^https?:\/\/(www|s)\.youtube\.com\/api\/stats\/ads _ reject-200
+^https?:\/\/(www|s)\.youtube\.com\/(pagead|ptracking) _ reject-200
+^https?:\/\/s\.youtube\.com\/api\/stats\/qoe\?adcontext _ reject-200
+
+[Script]
+# Locket: 60-second duration settings and personal introduction image.
+locket_receipt_60s = type=http-response, pattern=^https:\/\/api\.revenuecat\.com\/.+\/(receipts$|subscribers\/[^/]+$), script-path=https://raw.githubusercontent.com/nghhoag05-art/Locket-60s-AI/main/scripts/locketfix8_60s_full.js, requires-body=true, max-size=-1, timeout=60
+locket_header_60s = type=http-request, pattern=^https:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers), script-path=https://raw.githubusercontent.com/nghhoag05-art/Locket-60s-AI/main/scripts/header7_60s_full.js, timeout=60
+locket_config_60s = type=http-response, pattern=^https:\/\/firebaseremoteconfig\.googleapis\.com\/v1\/projects\/locket-4252a\/.+, script-path=https://raw.githubusercontent.com/nghhoag05-art/Locket-60s-AI/main/scripts/forceGold4.3_60s_full.js, requires-body=true, max-size=-1, timeout=60
+
+# YouTube: original arguments and binary-body settings from the requested source.
+youtube.response = type=http-response, pattern=^https:\/\/youtubei\.googleapis\.com\/(youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch|log_event|config))(\?(.*))?$, requires-body=1, max-size=-1, binary-body-mode=1, script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Youtube/youtube.response.js, argument="{"captionLang":"vi","blockUpload":true,"blockImmersive":true,"blockShorts":false,"debug":false}"
+youtube.request.init = type=http-request, pattern=^https?:\/\/[\w-]+\.googlevideo\.com\/initplayback.+&ack.*, requires-body=1, max-size=-1, binary-body-mode=1, script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Youtube/youtube.request.js, argument="{"captionLang":"vi"}"
+youtube.request.log_event = type=http-request, pattern=^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/log_event, requires-body=1, max-size=-1, binary-body-mode=1, script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Youtube/youtube.request.js
+
+# Hakaiz image handler experiment: returns the same input photo URL, no real generation.
+locket_ai_experimental = type=http-request, pattern=^https?:\/\/(?:us-central1-locket-4252a\.cloudfunctions\.net|api\.locketcamera\.com)\/generateFilteredImage\/?(?:\?[^#]*)?$, script-path=https://raw.githubusercontent.com/nghhoag05-art/Locket-60s-AI/main/scripts/ai-image-experimental.js, requires-body=true, max-size=-1, timeout=60
+
+[Map Local]
+^https?:\/\/[\w-]+\.googlevideo\.com\/initplayback.+&oad data-type=text data="" status-code=200
+
+[MITM]
+hostname = %APPEND% api.locketcamera.com, us-central1-locket-4252a.cloudfunctions.net, api.revenuecat.com, firebaseremoteconfig.googleapis.com, *.googlevideo.com, youtubei.googleapis.com, www.youtube.com, s.youtube.com, -redirector*.googlevideo.com
