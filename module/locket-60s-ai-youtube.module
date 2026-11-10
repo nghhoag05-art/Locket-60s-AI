@@ -1,5 +1,5 @@
 #!name=Locket 60s AI + YouTube - Huy Hoang
-#!desc=Locket 60s + YouTube + configurable Gemini image-edit backend. API key and a deployed backend are required; device testing is pending.
+#!desc=Locket 60s + YouTube + Python 3.14/OpenAI image-edit backend. Run the backend with a private API key and HTTPS endpoint; device testing is pending.
 #!author=Huy Hoang (combined); YouTube scripts: Maasea/sgmodule (Apache-2.0)
 # Locket source: https://github.com/nghhoag05-art/Locket-60s/tree/main/Locket_Only_60s_Full
 # YouTube rules source: https://github.com/nghhoag05-art/Locket-Custom-Personal-huyhoang/blob/main/module/locket-youtube-huyhoang.module

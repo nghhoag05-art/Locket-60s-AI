@@ -1,8 +1,8 @@
-FROM node:24-alpine
-ENV NODE_ENV=production
+FROM python:3.14-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 HOST=0.0.0.0
 WORKDIR /app
-COPY backend ./backend
-USER node
+COPY backend_py ./backend_py
+USER 65534:65534
 ENV DATA_DIR=/tmp/locket-ai-generated
 EXPOSE 8787
-CMD ["node", "backend/server.mjs"]
+CMD ["python", "-m", "backend_py.server"]

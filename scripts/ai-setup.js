@@ -1,4 +1,4 @@
-/* Local-only connection page for Shadowrocket. Never enter a Gemini API key here. */
+/* Local-only connection page for Shadowrocket. Never enter an OpenAI API key here. */
 (function () {
     var origin = "http://locket-ai-setup.invalid";
     var endpointKey = "LOCKET_AI_ENDPOINT";
@@ -63,11 +63,11 @@
         var html = '<!doctype html><html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
             '<title>Kết nối AI cho Locket</title><style>body{font:16px system-ui;margin:0;background:#faf7f0;color:#25241f}main{max-width:520px;margin:40px auto;padding:24px}h1{font-size:28px}label{display:block;margin-top:20px;font-weight:600}input{box-sizing:border-box;width:100%;padding:12px;margin:8px 0;border:1px solid #c9c5bb;border-radius:10px;font:inherit}button{padding:12px 20px;background:#bd8b23;border:0;border-radius:10px;font:inherit;color:#fff;cursor:pointer}small,p{line-height:1.55}.secondary{background:#e9e5da;color:#34312a;margin-top:12px}.status{padding:12px;border-radius:10px;background:#ede8da}</style>' +
             '<main><h1>Kết nối AI cho Locket</h1><p class="status">' + (configured ? "Đã lưu kết nối. Chưa xác nhận backend tạo ảnh thành công." : "Chưa có kết nối backend.") + '</p>' +
-            '<p>Cài backend trước, rồi nhập địa chỉ HTTPS và mã kết nối do bạn đặt trên backend. API key Gemini chỉ nhập ở máy chủ.</p>' +
+            '<p>Chạy backend Python trên máy tính, rồi nhập địa chỉ HTTPS và mã kết nối hiện trong cửa sổ backend. API key OpenAI chỉ nhập ở máy tính.</p>' +
             '<form method="post" action="' + origin + '/save">' + hidden +
             '<label>Địa chỉ máy chủ AI<input name="endpoint" type="url" required maxlength="512" placeholder="https://ai.example.com" value="' + escapeHtml(current) + '"></label>' +
             '<label>Mã kết nối backend<input name="token" type="password" required minlength="24" maxlength="258" autocomplete="off"></label>' +
-            '<small>Mã này khác token đăng nhập Locket và API key Gemini. Thông tin được lưu trong Shadowrocket trên thiết bị.</small><p><button>Lưu kết nối</button></p></form>' +
+            '<small>Mã này khác token đăng nhập Locket và API key OpenAI. Thông tin được lưu trong Shadowrocket trên thiết bị.</small><p><button>Lưu kết nối</button></p></form>' +
             '<form method="post" action="' + origin + '/clear">' + hidden + '<button class="secondary">Xóa kết nối đã lưu</button></form></main></html>';
         return finish(200, html);
     }
