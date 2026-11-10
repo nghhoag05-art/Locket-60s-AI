@@ -1,44 +1,75 @@
-# Locket-60s AI — Hoàng
+# Locket-60s AI — backend chỉnh sửa ảnh
 
 ![Ảnh giới thiệu Zalo](assets/zalo-intro.png)
 
-Bản riêng dựa trên dữ liệu của Hoàng trong [Locket-60s](https://github.com/nghhoag05-art/Locket-60s), giữ cấu hình 60 giây, các ghi chú, bộ lọc, thông tin Zalo và phần YouTube.
+Giữ dữ liệu của Hoàng: 60 giây, 219 caption, bộ lọc, ảnh/lời giới thiệu Zalo và YouTube. Phần ảnh được viết lại để gọi Gemini qua backend riêng.
 
-## Thêm vào Shadowrocket
+**Trạng thái:** kiểm thử cục bộ bằng phản hồi mô phỏng; chưa có API key, chưa triển khai backend HTTPS, chưa xác nhận trên iPhone. Cài module riêng lẻ chưa tạo được ảnh AI. Khi thiếu cấu hình hoặc backend lỗi, script giữ yêu cầu gốc cho Locket xử lý.
 
-Dùng URL module:
+## Luồng mới
+
+URL ảnh + prompt → backend của bạn → Gemini → ảnh kết quả lưu trên backend → URL ảnh mới trả về Locket.
+
+Script chỉ gửi URL ảnh và prompt bằng mã kết nối backend, không chuyển token đăng nhập Locket. Chỉ trả thành công sau khi backend trả URL ảnh hợp lệ. URL ảnh kết quả là đường dẫn ngẫu nhiên; người có link có thể xem ảnh đến khi hết hạn, mặc định 15 phút.
+
+## 1. Chạy backend
+
+Cần Node.js 22 trở lên, không cần thư viện npm bên ngoài:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Điền trên máy chủ riêng:
+
+| Biến | Nội dung |
+| --- | --- |
+| `GEMINI_API_KEY` | Key Gemini từ [Google AI Studio](https://aistudio.google.com/apikey). |
+| `BACKEND_ACCESS_TOKEN` | Mã kết nối riêng, tối thiểu 24 ký tự; nên dùng chuỗi ngẫu nhiên dài. |
+| `PUBLIC_BASE_URL` | HTTPS origin của backend, ví dụ `https://ai.example.com`. |
+| `GEMINI_IMAGE_MODEL` | Mặc định `gemini-3.1-flash-image`; tài khoản phải có quyền/quota dùng model. |
+
+Tạo mã kết nối trên máy, không commit kết quả:
+
+```powershell
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+npm start
+```
+
+Backend nghe HTTP ở cổng 8787. Triển khai sau reverse proxy có HTTPS và đặt `PUBLIC_BASE_URL` thành tên miền đó. Hosting có biến môi trường sẵn thì chạy `node backend/server.mjs`. Repo có Dockerfile; thư mục lưu ảnh phải có quyền ghi.
+
+`GET /health` cho biết `configured`; thiếu key/token/URL thì `configured:false` và API chỉnh ảnh trả 503. API key chỉ ở backend. Không nhập key Gemini vào module, trang kết nối hoặc GitHub. `.env`, `data/` và log được bỏ qua bởi Git.
+
+## 2. Kết nối trên Shadowrocket
+
+Thêm hoặc làm mới module:
 
 https://raw.githubusercontent.com/nghhoag05-art/Locket-60s-AI/main/module/locket-60s-ai-youtube.module
 
-Trong Shadowrocket, vào Cấu hình → cấu hình đang dùng → Module → + và dán URL. Tắt các module Locket/YouTube cũ trùng chức năng, bật HTTPS Decryption với CA đang dùng, làm mới module/script rồi mở lại ứng dụng.
+Bật HTTPS Decryption/CA đang dùng. Chỉ bật một module Locket để tránh trùng quy tắc.
 
-## Phần AI thử nghiệm hoạt động thế nào?
+Sau khi backend hoạt động, mở địa chỉ này trên điện thoại đang chạy Shadowrocket:
 
-Người dùng đã chọn ghép thử mã Hakaiz và chấp nhận có thể chỉ nhận ảnh gốc.
+`http://locket-ai-setup.invalid/`
 
-- Chỉ tách nhánh xử lý request `generateFilteredImage` từ nguồn Hakaiz/dinhtuan07.
-- Với URL ảnh được nhận diện, script tạo phản hồi thành công chứa **chính URL ảnh đầu vào**. Script không tạo ảnh AI mới.
-- Nếu không nhận diện body hoặc URL, request đi qua nguyên trạng. Điều này không cấp quyền AI trên máy chủ Locket.
-- Không sao chép catalogue/ghi chú/khung ảnh của Hakaiz; không ghép đồng bộ UID, sửa hồ sơ, cộng đồng VIP, Photobooth hay đoạn xóa lỗi từ response.
-- Không thêm dịch vụ AI bên ngoài hoặc API key.
+Đây là trang được script trả trực tiếp trên thiết bị. Nhập địa chỉ HTTPS backend và `BACKEND_ACCESS_TOKEN`; hai giá trị được lưu trong Shadowrocket. Không có trường nhập API key Gemini. Có nút xóa kết nối đã lưu.
 
-## Dữ liệu cá nhân và ảnh
+## Phạm vi hỗ trợ
 
-Tên, lời giới thiệu và số Zalo trong popup giữ từ script của Hoàng. Ảnh đã chọn được đặt vào `feature_discovery_popup_config.feature_set[0].imageURL` và lưu ở `assets/zalo-intro.png`.
+- URL ảnh từ các trường được nhận diện như `imageUrl`, `image_url`, `inputUrl`, `url` và một số trường trong `data`.
+- Prompt từ `prompt`, `text_prompt`, `instruction`; nếu thiếu, hỗ trợ 11 ID filter có prompt dựng sẵn trong script. Schema/ID chưa biết đi qua nguyên trạng.
+- Backend tải PNG/JPEG/WebP qua HTTPS từ ba host mặc định: `firebasestorage.googleapis.com`, `storage.googleapis.com`, `cdn.locketcamera.com`. Không theo redirect. Chỉ bổ sung host ảnh tin cậy đã quan sát vào `INPUT_IMAGE_HOSTS`.
 
-Ảnh nguồn đã kiểm tra là PNG tại:
-https://i.postimg.cc/26JD782q/Screenshot-2026-11-10-021543.png
+## Kiểm thử và giới hạn
 
-Cách Locket hiển thị/cắt ảnh trong popup chưa được kiểm tra trên iPhone.
+```powershell
+npm test
+```
 
-## Giới hạn
+Kiểm thử không gọi Gemini hoặc tạo phí: dùng dữ liệu giả lập cho adapter, tải/lưu ảnh, auth, giới hạn dữ liệu, timeout, lỗi provider, script và trang kết nối.
 
-- 22 giá trị thời lượng được đặt thành 60 giây; ứng dụng hoặc máy chủ vẫn có thể áp giới hạn khác.
-- Gold trong script là dữ liệu mô phỏng, không tạo giao dịch mua.
-- Phần tạo ảnh thử nghiệm trả ảnh đầu vào, không phải một công cụ tạo ảnh AI thật.
-- YouTube sử dụng Maasea/sgmodule; upstream kiểm thử cho Surge, chưa xác nhận thực tế trên iPhone/Shadowrocket ở bản ghép này.
-- Cấu hình Firebase giữ cách xử lý hiện có, gồm giới hạn cache `NO_CHANGE` và việc thay nguyên khối một số JSON lồng.
+Chưa có API key và backend HTTPS nên chưa kiểm tra tạo ảnh thật. Chưa có request/response thu từ iPhone; schema Locket hoặc cách ứng dụng nhận kết quả có thể khác với mã hiện tại. Đây chưa phải xác nhận chạy thành công trong ứng dụng.
 
-## Nguồn
+Cấu hình 60 giây vẫn phụ thuộc giới hạn app/server. Gold là dữ liệu mô phỏng. YouTube tiếp tục dùng Maasea/sgmodule và chưa được thử trên iPhone ở lần sửa này. Dữ liệu Firebase, caption và ảnh Zalo giữ nguyên.
 
-Xem [SOURCES.md](SOURCES.md) để đối chiếu nguồn và phạm vi tách mã. `SHA256SUMS.txt` kiểm tra các file trong repo.
+Nguồn: [SOURCES.md](SOURCES.md). Mã kiểm tra: `SHA256SUMS.txt`.
