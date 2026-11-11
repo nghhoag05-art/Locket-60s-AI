@@ -17,9 +17,11 @@ import time
 import warnings
 
 from backend_py.server import create_server, read_config
+from backend_py.key_input import KeyDialogUnavailable, read_masked_key
 
 
 ROOT = Path(__file__).resolve().parent
+WINDOWS_KEY_DIALOG = os.name == "nt"
 SECRET_NAMES = frozenset({"OPENAI_API_KEY", "GEMINI_API_KEY", "BACKEND_ACCESS_TOKEN"})
 PUBLIC_SETTINGS = frozenset({
     "HOST", "PORT", "PUBLIC_BASE_URL", "OPENAI_IMAGE_MODEL", "DATA_DIR",
@@ -89,17 +91,31 @@ def valid_api_key(value: str) -> bool:
     return api_key_input_error(value) is None
 
 
-def prompt_api_key() -> str:
-    print("Paste the complete new key; input is masked with *. Press Ctrl+C to cancel.", flush=True)
-    print("On Windows, use the terminal's Paste menu/right-click, or Ctrl+Shift+V in Windows Terminal.", flush=True)
+def prompt_api_key(*, console_key: bool = False) -> str:
+    use_dialog = WINDOWS_KEY_DIALOG and not console_key
+    if use_dialog:
+        print("A separate Locket AI key window will open. Paste with Ctrl+V, then click OK; Cancel stops startup.", flush=True)
+    else:
+        print("Paste the complete new key; input is masked with *. Press Ctrl+C to cancel.", flush=True)
+        print("Use the terminal's Paste command. Windows users can reopen without --console-key for a key window.", flush=True)
+    problem = None
     for attempt in range(3):
-        try:
-            with warnings.catch_warnings():
-                # Stop before getpass can fall back to echoing the secret.
-                warnings.simplefilter("error", getpass.GetPassWarning)
-                candidate = getpass.getpass("Enter a fresh OpenAI API key (masked): ", echo_char="*").strip()
-        except getpass.GetPassWarning:
-            raise LauncherError("Secure key input is unavailable. Reopen Start-Locket-Backend.cmd in a terminal.") from None
+        if use_dialog:
+            try:
+                candidate = read_masked_key(problem=problem)
+            except KeyDialogUnavailable:
+                raise LauncherError("The key window could not open. Check Python's Tcl/Tk installation; --console-key explicitly selects terminal input.") from None
+            if candidate is None:
+                raise EOFError()
+        else:
+            try:
+                with warnings.catch_warnings():
+                    # Stop before getpass can fall back to echoing the secret.
+                    warnings.simplefilter("error", getpass.GetPassWarning)
+                    candidate = getpass.getpass("Enter a fresh OpenAI API key (masked): ", echo_char="*")
+            except getpass.GetPassWarning:
+                raise LauncherError("Secure key input is unavailable. Reopen Start-Locket-Backend.cmd in a terminal.") from None
+        candidate = candidate.strip()
         problem = api_key_input_error(candidate)
         if problem is None:
             return candidate
@@ -110,7 +126,7 @@ def prompt_api_key() -> str:
     raise LauncherError("No valid key was entered after three attempts. Reopen the launcher to try again; no key was saved.")
 
 
-def prepare_credentials(env: dict[str, str], *, no_prompt: bool) -> None:
+def prepare_credentials(env: dict[str, str], *, no_prompt: bool, console_key: bool = False) -> None:
     token = env.get("BACKEND_ACCESS_TOKEN", "")
     if token and not re.fullmatch(r"[A-Za-z0-9._~+/-]{24,256}={0,2}", token):
         raise LauncherError("BACKEND_ACCESS_TOKEN must be a 24-256 character bearer token compatible with Shadowrocket.")
@@ -126,7 +142,7 @@ def prepare_credentials(env: dict[str, str], *, no_prompt: bool) -> None:
         use_existing = False
     if not use_existing:
         env.pop("OPENAI_API_KEY", None)
-        env["OPENAI_API_KEY"] = prompt_api_key()
+        env["OPENAI_API_KEY"] = prompt_api_key(console_key=console_key)
     if not env.get("BACKEND_ACCESS_TOKEN"):
         env["BACKEND_ACCESS_TOKEN"] = secrets.token_urlsafe(32)
         print("\nCopy this backend token into Shadowrocket; it is shown once for this session:", flush=True)
@@ -213,6 +229,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run the local Locket AI backend (Python 3.14).")
     parser.add_argument("--no-prompt", action="store_true", help="Use existing environment settings without prompting or generating credentials.")
     parser.add_argument("--tunnel", action="store_true", help="Start a public Cloudflare Quick Tunnel for this session.")
+    parser.add_argument("--console-key", action="store_true", help="Explicitly enter the API key in the terminal instead of the Windows key window.")
     args = parser.parse_args(argv)
     tunnel = server = None
     try:
@@ -220,7 +237,7 @@ def main(argv: list[str] | None = None) -> int:
         load_public_settings(ROOT / ".env", env)
         env.setdefault("HOST", "127.0.0.1")
         env.setdefault("DATA_DIR", str(ROOT / "data" / "generated"))
-        prepare_credentials(env, no_prompt=args.no_prompt)
+        prepare_credentials(env, no_prompt=args.no_prompt, console_key=args.console_key)
         config = read_config(env)
         if args.tunnel:
             if config.host != "127.0.0.1" or config.port != 8787:

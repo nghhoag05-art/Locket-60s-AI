@@ -10,7 +10,7 @@ Giữ dữ liệu của Hoàng: cấu hình 60 giây, 219 caption, bộ lọc, �
 
 1. Thu hồi khóa API đã từng gửi vào chat hoặc công khai; tạo khóa mới tại [OpenAI API keys](https://platform.openai.com/api-keys). Nhập khóa mới trực tiếp trên máy, không gửi lại vào chat.
 2. Mở `Start-Locket-Backend.cmd` trong thư mục này. Bộ khởi chạy ưu tiên Python 3.14 ở `%LOCALAPPDATA%\Python\pythoncore-3.14-64\python.exe`, sau đó thử `py -3.14`. Không cần cài thư viện pip.
-3. Nhập khóa OpenAI mới ở lời nhắc được che bằng dấu `*`. Dùng lệnh **Paste/Dán** của cửa sổ (thường là chuột phải); trong Windows Terminal có thể dùng `Ctrl+Shift+V`. Dán nguyên khóa vừa tạo, không dán giá trị bị che/rút gọn trong danh sách khóa. Nếu nhập trống hoặc dán lỗi, chương trình giải thích và cho thử lại tối đa ba lần. Bộ khởi chạy tạo một mã kết nối backend và hiện mã đó một lần trong cửa sổ của bạn. Giữ mã này để nhập vào Shadowrocket.
+3. Trên Windows, cửa sổ **Locket AI - Nhap khoa OpenAI** sẽ mở riêng. Bấm vào ô nhập, dùng **Ctrl+V** dán nguyên khóa vừa tạo rồi bấm **OK**. Khóa được che bằng dấu `*`; **Cancel** hoặc nút X hủy khởi chạy. Không dán giá trị bị che/rút gọn trong danh sách khóa. Nếu nhập trống hoặc sai định dạng, cửa sổ mở lại với hướng dẫn, tối đa ba lần. Bộ khởi chạy tạo một mã kết nối backend và hiện mã đó một lần trong cửa sổ CMD của bạn. Giữ mã này để nhập vào Shadowrocket.
 4. Bộ khởi chạy dùng `cloudflared` đã cài trên máy để mở HTTPS tạm thời tới `127.0.0.1:8787`. Sao chép dòng `Shadowrocket backend URL: https://…trycloudflare.com`.
 5. Giữ cửa sổ và máy tính hoạt động. `Ctrl+C` dừng backend cùng tiến trình tunnel do nó tạo. Mỗi lần mở lại có thể đổi URL và mã kết nối; cập nhật lại trên điện thoại.
 
@@ -19,6 +19,8 @@ Khóa API và mã kết nối chỉ nằm trong bộ nhớ của phiên chạy, 
 Có thể tạo `.env` từ `.env.example` để đổi **thiết lập công khai** như model, thư mục ảnh hoặc giới hạn. Bộ khởi chạy từ chối các bí mật có giá trị trong `.env`; nhập qua lời nhắc ẩn hoặc biến môi trường của tiến trình. Không nhập API key vào module hoặc trang kết nối Shadowrocket.
 
 Nếu không dùng tunnel tạm, chạy `run_backend.py` bằng Python 3.14 và đặt `PUBLIC_BASE_URL` thành HTTPS origin của reverse proxy riêng. Mặc định backend chỉ nghe `127.0.0.1:8787`. `--no-prompt` dùng cấu hình môi trường sẵn có và không hỏi hoặc tự tạo bí mật. Thiếu key/token/HTTPS origin thì `/health` trả `configured:false`, API chỉnh ảnh trả 503.
+
+Ô nhập riêng dùng Tkinter đi kèm bản Python trên Windows. Nếu máy khác thiếu Tcl/Tk, chương trình báo lỗi và dừng; không tự chuyển sang nhập hiện khóa. Chỉ dùng `--console-key` khi bạn muốn nhập ẩn trong terminal. Lỗi CMD chỉ hiện một dấu `*` rồi báo ký tự điều khiển khi nhấn Ctrl+V được tránh bằng cửa sổ nhập riêng.
 
 ## Kết nối Shadowrocket
 
