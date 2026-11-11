@@ -4,6 +4,8 @@
 
 Giữ dữ liệu của Hoàng: cấu hình 60 giây, 219 caption, bộ lọc, ảnh/lời giới thiệu Zalo và YouTube. Phần AI gọi OpenAI Images API qua backend Python trên máy tính của bạn, rồi trả URL ảnh kết quả cho script Locket.
 
+Đã bổ sung phần danh mục còn thiếu của Hakaiz: 83 định nghĩa hiệu ứng, 10 nhóm và 63 mục chọn nhanh, kèm hình xem trước và các cờ chọn hiệu ứng. Đây là giao diện chọn trong Locket; trang `locket-ai-setup.invalid` chỉ dùng kết nối và xem chẩn đoán.
+
 **Trạng thái:** đã kiểm thử tự động bằng dữ liệu giả lập trên Python 3.14.5. Chưa kiểm tra bằng API key thật hoặc trên iPhone. Module cần backend đang chạy, HTTPS và tài khoản OpenAI API có quyền sử dụng model; cài module riêng lẻ chưa tạo được ảnh.
 
 ## Chạy trên Windows
@@ -31,6 +33,10 @@ Trên điện thoại đang chạy Shadowrocket, mở:
 `http://locket-ai-setup.invalid/`
 
 Đây là trang được script trả trực tiếp trên thiết bị. Nhập URL HTTPS và mã kết nối hiện trong cửa sổ backend, rồi lưu. Hai giá trị được lưu trong Shadowrocket; có nút xóa kết nối. Không dùng token đăng nhập Locket hoặc API key OpenAI làm mã kết nối.
+
+Sau khi cập nhật module, tải lại các script, đóng hẳn rồi mở lại Locket. Hook Firebase mới bỏ các header kiểm tra cache; response danh mục được đánh dấu `UPDATE` theo nguồn Hakaiz. Trang kết nối sẽ hiện **Đã áp dụng danh mục Hakaiz gồm 83 mục** sau khi script cấu hình mới chạy trên thiết bị. Nếu vẫn chỉ thấy danh sách cũ, kiểm tra trạng thái này trước khi thử nhập khóa lại.
+
+Trang kết nối cũng hiện lần xử lý gần nhất bằng thông báo cố định (thiếu cấu hình, thiếu trường ảnh, hiệu ứng chưa hỗ trợ, lỗi backend hoặc có ảnh mới). Phần chẩn đoán chỉ lưu mã bước, mã trạng thái và thời điểm; không lưu prompt, URL ảnh, token hay UID.
 
 Khi nhận diện được yêu cầu tạo filter, script chỉ gửi `{imageUrl, prompt}` và mã kết nối riêng tới backend. Backend tải ảnh, gửi ảnh cùng prompt tới OpenAI và lưu ảnh đầu ra. Script chỉ trả thành công khi nhận URL kết quả hợp lệ; thiếu cấu hình hoặc lỗi thì giữ yêu cầu gốc cho Locket xử lý.
 
@@ -68,7 +74,9 @@ npm test
 
 Các kiểm thử dùng dữ liệu mô phỏng, không gọi OpenAI hay tạo phí. Chúng kiểm tra hợp đồng HTTP, xác thực, lỗi provider, giới hạn, lưu/xóa ảnh, bộ khởi chạy, script và trang kết nối.
 
-Chưa có request/response thực tế thu từ iPhone; schema hoặc cách Locket nhận ảnh có thể khác với mã hiện tại. Client hỗ trợ một số trường URL/prompt và 11 ID filter đã biết; schema chưa biết đi qua nguyên trạng. Ngân sách chờ provider mặc định 32 giây để nằm trong thời gian chờ của script; tác vụ chậm có thể thất bại dù phía provider vẫn tính phí.
+Client hỗ trợ toàn bộ 35 ID hiệu ứng gốc và các ID/prompt tương ứng trong danh mục Hakaiz. Có 56 mục hiệu ứng trong danh mục được đổi thành chỉ dẫn chỉnh ảnh thật; 27 mục khung/Photobooth đi qua nguyên trạng với chẩn đoán `unsupported_composition`, vì backend hiện chỉ chỉnh một ảnh và chưa ghép khung hoặc chụp bốn ảnh. Không trả ảnh gốc rồi báo đã tạo ảnh AI. Hình xem trước/khung vẫn tải từ các host tài nguyên của nguồn Hakaiz, nên phụ thuộc nguồn đó còn hoạt động.
+
+Chưa có request/response thực tế thu từ iPhone; schema hoặc cách Locket nhận ảnh có thể khác với mã hiện tại. Schema chưa biết đi qua nguyên trạng. Kiểm thử danh mục và client không xác nhận nút đã bấm được trên mọi phiên bản Locket; cần thử lại trên thiết bị sau khi tải danh mục mới. Ngân sách chờ provider mặc định 32 giây để nằm trong thời gian chờ của script; tác vụ chậm có thể thất bại dù phía provider vẫn tính phí.
 
 Cấu hình quay 60 giây còn phụ thuộc app/server. Gold là dữ liệu mô phỏng; YouTube chưa được thử trên iPhone ở lần sửa này. Không có xác nhận tạo ảnh thành công trong ứng dụng cho đến khi thử với backend, khóa mới và thiết bị thật.
 

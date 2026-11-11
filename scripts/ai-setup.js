@@ -30,6 +30,42 @@
     function read(key) { return String($persistentStore.read(key) || ""); }
     function write(key, value) { return $persistentStore.write(value, key) !== false; }
 
+    function diagnosticText() {
+        var messages = {
+            received: "Đã nhận yêu cầu tạo ảnh từ Locket.",
+            unsupported_method: "Yêu cầu ảnh chưa đúng phương thức được hỗ trợ.",
+            invalid_body: "Chưa đọc được nội dung yêu cầu ảnh.",
+            runtime_unavailable: "Môi trường script chưa hỗ trợ kết nối backend.",
+            store_unavailable: "Script chưa đọc được cấu hình đã lưu trên thiết bị.",
+            endpoint_missing: "Chưa lưu địa chỉ backend.",
+            endpoint_invalid: "Địa chỉ backend đã lưu chưa hợp lệ.",
+            token_missing: "Chưa lưu mã kết nối backend.",
+            token_invalid: "Mã kết nối backend đã lưu chưa hợp lệ.",
+            invalid_json: "Yêu cầu ảnh từ Locket chưa có định dạng được hỗ trợ.",
+            image_missing: "Chưa tìm thấy địa chỉ ảnh đầu vào trong yêu cầu Locket.",
+            prompt_missing: "Chưa tìm thấy mô tả hiệu ứng trong yêu cầu Locket.",
+            unknown_preset: "Hiệu ứng này chưa được nhận diện.",
+            unsupported_composition: "Mục này là khung/Photobooth. Backend hiện chưa ghép khung hoặc tạo bố cục nhiều ảnh.",
+            prompt_too_long: "Mô tả hiệu ứng vượt giới hạn hỗ trợ.",
+            started: "Đã gửi yêu cầu chỉnh ảnh tới backend.",
+            timeout: "Backend chưa trả kết quả trong thời gian chờ.",
+            transport_error: "Không kết nối được backend. Kiểm tra cửa sổ Python và URL HTTPS còn hoạt động.",
+            http_error: "Backend đã trả lỗi. Cần kiểm tra cấu hình hoặc quyền sử dụng API.",
+            invalid_response: "Phản hồi backend chưa đúng định dạng.",
+            invalid_output: "Backend chưa trả địa chỉ ảnh đầu ra hợp lệ.",
+            unchanged_output: "Backend trả lại địa chỉ ảnh đầu vào; script không báo tạo ảnh AI thành công.",
+            success: "Backend đã trả một ảnh kết quả mới. Cần kiểm tra ảnh hiển thị trong Locket.",
+            runtime_error: "Script gặp lỗi khi xử lý yêu cầu ảnh."
+        };
+        try {
+            var status = JSON.parse(read("LOCKET_AI_STATUS"));
+            if (status && typeof status === "object" && Object.prototype.hasOwnProperty.call(messages, status.code)) {
+                return messages[status.code];
+            }
+        } catch (error) {}
+        return "Chưa ghi nhận yêu cầu tạo ảnh. Mở Locket và thử chọn một hiệu ứng.";
+    }
+
     function normalizeEndpoint(value) {
         var match = /^https:\/\/([a-z0-9.-]+)(?::([0-9]{1,5}))?(?:\/v1\/images\/edit\/?|\/)?$/i.exec(value);
         if (!match) return "";
@@ -63,6 +99,8 @@
         var html = '<!doctype html><html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
             '<title>Kết nối AI cho Locket</title><style>body{font:16px system-ui;margin:0;background:#faf7f0;color:#25241f}main{max-width:520px;margin:40px auto;padding:24px}h1{font-size:28px}label{display:block;margin-top:20px;font-weight:600}input{box-sizing:border-box;width:100%;padding:12px;margin:8px 0;border:1px solid #c9c5bb;border-radius:10px;font:inherit}button{padding:12px 20px;background:#bd8b23;border:0;border-radius:10px;font:inherit;color:#fff;cursor:pointer}small,p{line-height:1.55}.secondary{background:#e9e5da;color:#34312a;margin-top:12px}.status{padding:12px;border-radius:10px;background:#ede8da}</style>' +
             '<main><h1>Kết nối AI cho Locket</h1><p class="status">' + (configured ? "Đã lưu kết nối. Chưa xác nhận backend tạo ảnh thành công." : "Chưa có kết nối backend.") + '</p>' +
+            '<p class="status">' + (read("LOCKET_AI_CATALOG_VERSION") === "hakaiz-9c2ea58-83" ? "Đã áp dụng danh mục Hakaiz gồm 83 mục. Khung/Photobooth chưa được backend ghép ảnh." : "Chưa ghi nhận danh mục Hakaiz mới. Cập nhật module rồi đóng và mở lại Locket để tải cấu hình.") + '</p>' +
+            '<p class="status">' + escapeHtml(diagnosticText()) + '</p>' +
             '<p>Chạy backend Python trên máy tính, rồi nhập địa chỉ HTTPS và mã kết nối hiện trong cửa sổ backend. API key OpenAI chỉ nhập ở máy tính.</p>' +
             '<form method="post" action="' + origin + '/save">' + hidden +
             '<label>Địa chỉ máy chủ AI<input name="endpoint" type="url" required maxlength="512" placeholder="https://ai.example.com" value="' + escapeHtml(current) + '"></label>' +

@@ -72,3 +72,26 @@ test('setup rejects a token the client would not accept', () => {
 test('unrelated requests pass through', () => {
   assert.equal(Object.keys(run({ url: 'https://example.com/', method: 'GET' }).value).length, 0);
 });
+
+test('setup shows catalog version and only whitelisted diagnostic text', () => {
+  const marker = 'test-only-private-value-never-render';
+  const store = new Map([
+    ['LOCKET_AI_CATALOG_VERSION', 'hakaiz-9c2ea58-83'],
+    ['LOCKET_AI_STATUS', JSON.stringify({ stage: 'backend', code: 'transport_error', imageUrl: marker, token: marker })],
+  ]);
+  const html = run({ url: origin + '/', method: 'GET' }, store).value.response.body;
+  assert.match(html, /Đã áp dụng danh mục Hakaiz gồm 83 mục/);
+  assert.match(html, /Không kết nối được backend/);
+  assert.ok(!html.includes(marker));
+});
+
+test('malformed or unknown stored diagnostics never reflect private text or HTML', () => {
+  const marker = '<img src=x onerror=private_test_marker>';
+  for (const status of [marker, JSON.stringify({ code: marker }), JSON.stringify(null), JSON.stringify({ code: '__proto__' })]) {
+    const store = new Map([['LOCKET_AI_STATUS', status], ['LOCKET_AI_CATALOG_VERSION', marker]]);
+    const html = run({ url: origin + '/', method: 'GET' }, store).value.response.body;
+    assert.match(html, /Chưa ghi nhận yêu cầu tạo ảnh/);
+    assert.ok(!html.includes(marker));
+    assert.ok(!html.includes('private_test_marker'));
+  }
+});
