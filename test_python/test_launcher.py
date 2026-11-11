@@ -5,6 +5,7 @@ import io
 from pathlib import Path
 import tempfile
 import unittest
+import warnings
 from unittest.mock import MagicMock, patch
 
 import run_backend as launcher
@@ -131,8 +132,104 @@ class LauncherTests(unittest.TestCase):
 
     def test_local_key_format_validation(self):
         self.assertTrue(launcher.valid_api_key("sk-" + "x" * 30))
-        for value in ("", "sk-short", "sk-your-openai-api-key", "sk-" + "x" * 30 + "\n"):
+        for value in ("", "sk-short", "sk-your-openai-api-key", "sk-" + "x" * 30 + "\n", "sk-proj-" + "*" * 30, "sk-" + "x" * 30 + "...", "sk-" + "x" * 30 + "\u2026"):
             self.assertFalse(launcher.valid_api_key(value))
+
+    def test_bad_paste_then_valid_key_retries_without_saving_or_echoing_candidates(self):
+        key = "sk-" + "test-only-key-" * 3
+        bad = "private test-only bad input"
+        env = {}
+        output = io.StringIO()
+
+        def hidden(prompt, *, echo_char):
+            self.assertEqual(echo_char, "*")
+            self.assertNotIn("OPENAI_API_KEY", env)
+            return next(candidates)
+
+        candidates = iter([bad, "\x16", "  " + key + "  "])
+        with contextlib.redirect_stdout(output), patch.object(launcher.sys.stdin, "isatty", return_value=True), patch.object(launcher.sys.stdout, "isatty", return_value=True), patch.object(launcher.getpass, "getpass", side_effect=hidden) as getpass_mock, patch.object(launcher.secrets, "token_urlsafe", return_value="test-only-token-" * 3) as generate:
+            launcher.prepare_credentials(env, no_prompt=False)
+        self.assertEqual(env["OPENAI_API_KEY"], key)
+        self.assertEqual(getpass_mock.call_count, 3)
+        generate.assert_called_once_with(32)
+        self.assertIn("Please try again", output.getvalue())
+        self.assertIn("control character", output.getvalue())
+        self.assertNotIn(key, output.getvalue())
+        self.assertNotIn(bad, output.getvalue())
+        self.assertNotIn("\x16", output.getvalue())
+
+    def test_three_invalid_attempts_stop_without_storing_key_or_generating_token(self):
+        for candidate in ("", "\x16", "private test-only invalid value"):
+            with self.subTest(empty=not candidate):
+                env = {}
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output), patch.object(launcher.sys.stdin, "isatty", return_value=True), patch.object(launcher.sys.stdout, "isatty", return_value=True), patch.object(launcher.getpass, "getpass", return_value=candidate) as hidden, patch.object(launcher.secrets, "token_urlsafe") as generate:
+                    with self.assertRaisesRegex(launcher.LauncherError, "three attempts") as error:
+                        launcher.prepare_credentials(env, no_prompt=False)
+                self.assertEqual(hidden.call_count, 3)
+                self.assertEqual(env, {})
+                generate.assert_not_called()
+                if candidate:
+                    self.assertNotIn(candidate, output.getvalue() + str(error.exception))
+
+    def test_safe_key_diagnostics_do_not_include_candidates(self):
+        samples = [
+            ("", "No key"), ("\x16", "control character"),
+            ("private test-only value", "spaces"),
+            ('"sk-' + "test-only-" * 3 + '"', "quotes"),
+            ("sk-proj-" + "*" * 30, "masked"),
+            ("sk-" + "test-only-" * 3 + "...", "shortened"),
+            ("private-test-only-invalid-key", "local format"),
+        ]
+        for candidate, expected in samples:
+            with self.subTest(reason=expected):
+                message = launcher.api_key_input_error(candidate)
+                self.assertIn(expected, message)
+                if candidate:
+                    self.assertNotIn(candidate, message)
+
+    def test_getpass_warning_stops_before_visible_fallback(self):
+        def unsafe_fallback(*args, **kwargs):
+            warnings.warn("test-only warning", launcher.getpass.GetPassWarning)
+            self.fail("A visible fallback must not execute")
+
+        with patch.object(launcher.getpass, "getpass", side_effect=unsafe_fallback), contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaisesRegex(launcher.LauncherError, "Secure key input"):
+                launcher.prompt_api_key()
+
+    def test_cancelled_prompt_does_not_store_credentials_or_generate_token(self):
+        for exception in (KeyboardInterrupt, EOFError):
+            with self.subTest(exception=exception.__name__):
+                env = {}
+                with contextlib.redirect_stdout(io.StringIO()), patch.object(launcher.sys.stdin, "isatty", return_value=True), patch.object(launcher.sys.stdout, "isatty", return_value=True), patch.object(launcher.getpass, "getpass", side_effect=exception), patch.object(launcher.secrets, "token_urlsafe") as generate:
+                    with self.assertRaises(exception):
+                        launcher.prepare_credentials(env, no_prompt=False)
+                self.assertEqual(env, {})
+                generate.assert_not_called()
+
+    def test_existing_valid_key_is_used_without_secret_prompt(self):
+        key = "sk-" + "test-only-existing-" * 2
+        token = "test-only-token-" * 3
+        env = {"OPENAI_API_KEY": key, "BACKEND_ACCESS_TOKEN": token}
+        with contextlib.redirect_stdout(io.StringIO()) as output, patch.object(launcher.sys.stdin, "isatty", return_value=True), patch.object(launcher.sys.stdout, "isatty", return_value=True), patch("builtins.input", return_value="y"), patch.object(launcher.getpass, "getpass") as hidden, patch.object(launcher.secrets, "token_urlsafe") as generate:
+            launcher.prepare_credentials(env, no_prompt=False)
+        self.assertEqual(env, {"OPENAI_API_KEY": key, "BACKEND_ACCESS_TOKEN": token})
+        hidden.assert_not_called()
+        generate.assert_not_called()
+        self.assertNotIn(key, output.getvalue())
+        self.assertNotIn(token, output.getvalue())
+
+    def test_invalid_existing_environment_key_requests_a_replacement(self):
+        bad = "private test-only invalid environment value"
+        key = "sk-" + "test-only-fresh-" * 2
+        token = "test-only-token-" * 3
+        env = {"OPENAI_API_KEY": bad, "BACKEND_ACCESS_TOKEN": token}
+        with contextlib.redirect_stdout(io.StringIO()) as output, patch.object(launcher.sys.stdin, "isatty", return_value=True), patch.object(launcher.sys.stdout, "isatty", return_value=True), patch("builtins.input", return_value="y"), patch.object(launcher.getpass, "getpass", return_value=key) as hidden:
+            launcher.prepare_credentials(env, no_prompt=False)
+        self.assertEqual(env["OPENAI_API_KEY"], key)
+        hidden.assert_called_once()
+        self.assertNotIn(bad, output.getvalue())
+        self.assertNotIn(key, output.getvalue())
 
 
 if __name__ == "__main__":

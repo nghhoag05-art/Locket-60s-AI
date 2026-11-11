@@ -10,7 +10,7 @@ Giữ dữ liệu của Hoàng: cấu hình 60 giây, 219 caption, bộ lọc, �
 
 1. Thu hồi khóa API đã từng gửi vào chat hoặc công khai; tạo khóa mới tại [OpenAI API keys](https://platform.openai.com/api-keys). Nhập khóa mới trực tiếp trên máy, không gửi lại vào chat.
 2. Mở `Start-Locket-Backend.cmd` trong thư mục này. Bộ khởi chạy ưu tiên Python 3.14 ở `%LOCALAPPDATA%\Python\pythoncore-3.14-64\python.exe`, sau đó thử `py -3.14`. Không cần cài thư viện pip.
-3. Nhập khóa OpenAI mới ở lời nhắc ẩn ký tự. Bộ khởi chạy tạo một mã kết nối backend và hiện mã đó một lần trong cửa sổ của bạn. Giữ mã này để nhập vào Shadowrocket.
+3. Nhập khóa OpenAI mới ở lời nhắc được che bằng dấu `*`. Dùng lệnh **Paste/Dán** của cửa sổ (thường là chuột phải); trong Windows Terminal có thể dùng `Ctrl+Shift+V`. Dán nguyên khóa vừa tạo, không dán giá trị bị che/rút gọn trong danh sách khóa. Nếu nhập trống hoặc dán lỗi, chương trình giải thích và cho thử lại tối đa ba lần. Bộ khởi chạy tạo một mã kết nối backend và hiện mã đó một lần trong cửa sổ của bạn. Giữ mã này để nhập vào Shadowrocket.
 4. Bộ khởi chạy dùng `cloudflared` đã cài trên máy để mở HTTPS tạm thời tới `127.0.0.1:8787`. Sao chép dòng `Shadowrocket backend URL: https://…trycloudflare.com`.
 5. Giữ cửa sổ và máy tính hoạt động. `Ctrl+C` dừng backend cùng tiến trình tunnel do nó tạo. Mỗi lần mở lại có thể đổi URL và mã kết nối; cập nhật lại trên điện thoại.
 

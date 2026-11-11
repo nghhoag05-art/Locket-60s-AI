@@ -14,6 +14,7 @@ import subprocess
 import sys
 import threading
 import time
+import warnings
 
 from backend_py.server import create_server, read_config
 
@@ -65,11 +66,48 @@ def load_public_settings(path: Path, env: dict[str, str]) -> None:
         env.setdefault(name, value)
 
 
+def api_key_input_error(value: str) -> str | None:
+    """Describe only the input problem; never include any part of a credential."""
+    if not value:
+        return "No key was entered. Paste the complete new key before pressing Enter."
+    if any(ord(char) < 32 or ord(char) == 127 for char in value):
+        return "A control character was received. Use your terminal's Paste command instead of Ctrl+V."
+    if any(char.isspace() for char in value):
+        return "The input contains spaces. Paste only the complete key, without other text."
+    if any(char in value for char in "\"'`"):
+        return "Remove quotes or backticks; paste only the complete key."
+    if "*" in value or "..." in value or "\u2026" in value:
+        return "This looks like a masked or shortened key. Copy the complete secret when you create it."
+    if (not value.startswith("sk-") or len(value) < 20
+            or value.lower() in {"sk-your-openai-api-key", "sk-your-api-key-here"}):
+        return "The local format check failed. Copy the complete OpenAI secret key from the key-creation dialog."
+    return None
+
+
 def valid_api_key(value: str) -> bool:
     """Only a local format check; provider acceptance is checked on a real edit."""
-    return (value.startswith("sk-") and len(value) >= 20
-            and not any(char.isspace() or ord(char) < 32 or ord(char) == 127 for char in value)
-            and value.lower() not in {"sk-your-openai-api-key", "sk-your-api-key-here"})
+    return api_key_input_error(value) is None
+
+
+def prompt_api_key() -> str:
+    print("Paste the complete new key; input is masked with *. Press Ctrl+C to cancel.", flush=True)
+    print("On Windows, use the terminal's Paste menu/right-click, or Ctrl+Shift+V in Windows Terminal.", flush=True)
+    for attempt in range(3):
+        try:
+            with warnings.catch_warnings():
+                # Stop before getpass can fall back to echoing the secret.
+                warnings.simplefilter("error", getpass.GetPassWarning)
+                candidate = getpass.getpass("Enter a fresh OpenAI API key (masked): ", echo_char="*").strip()
+        except getpass.GetPassWarning:
+            raise LauncherError("Secure key input is unavailable. Reopen Start-Locket-Backend.cmd in a terminal.") from None
+        problem = api_key_input_error(candidate)
+        if problem is None:
+            return candidate
+        del candidate
+        print(problem, flush=True)
+        if attempt < 2:
+            print("Please try again. No API request was made.", flush=True)
+    raise LauncherError("No valid key was entered after three attempts. Reopen the launcher to try again; no key was saved.")
 
 
 def prepare_credentials(env: dict[str, str], *, no_prompt: bool) -> None:
@@ -83,11 +121,12 @@ def prepare_credentials(env: dict[str, str], *, no_prompt: bool) -> None:
     use_existing = bool(env.get("OPENAI_API_KEY"))
     if use_existing:
         use_existing = input("Use OPENAI_API_KEY already in the environment? [Y/n]: ").strip().lower() in ("", "y", "yes")
+    if use_existing and not valid_api_key(env["OPENAI_API_KEY"]):
+        print("The existing environment key failed the local format check. Enter a fresh key below.", flush=True)
+        use_existing = False
     if not use_existing:
-        key = getpass.getpass("Enter a fresh OpenAI API key (hidden): ").strip()
-        env["OPENAI_API_KEY"] = key
-    if not valid_api_key(env["OPENAI_API_KEY"]):
-        raise LauncherError("The API key format is invalid; the key was not displayed or saved.")
+        env.pop("OPENAI_API_KEY", None)
+        env["OPENAI_API_KEY"] = prompt_api_key()
     if not env.get("BACKEND_ACCESS_TOKEN"):
         env["BACKEND_ACCESS_TOKEN"] = secrets.token_urlsafe(32)
         print("\nCopy this backend token into Shadowrocket; it is shown once for this session:", flush=True)
