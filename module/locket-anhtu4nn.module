@@ -1,0 +1,72 @@
+#!url=https://locketstu.anhtu4nn.workers.dev/api/modules/483b4306-f7b4-4369-8f30-4aad7f9e899e/2d9ace4590ebb1dc275a7e29aea43d382ebdee55157a221e.sgmodule
+#!name= Locketgold PTB
+#!desc= taphoacongnghe
+
+
+[Rule]
+# Chặn QUIC/UDP cho Locket
+AND,((DOMAIN,firebaseremoteconfig.googleapis.com),(PROTOCOL,UDP)),REJECT
+AND,((DOMAIN,api.revenuecat.com),(PROTOCOL,UDP)),REJECT
+AND,((DOMAIN,api.locketcamera.com),(PROTOCOL,UDP)),REJECT
+AND,((DOMAIN-SUFFIX,locketcamera.com),(PROTOCOL,UDP)),REJECT
+
+# Chặn Sentry
+DOMAIN-SUFFIX,sentry.io,REJECT
+DOMAIN-SUFFIX,ingest.sentry.io,REJECT
+
+[Header Rewrite]
+# Xóa Cache / ETag trên RevenueCat
+^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers) header-del x-revenuecat-etag
+^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers) header-del X-RevenueCat-ETag
+^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers) header-del if-none-match
+^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers) header-del If-None-Match
+^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers) header-del if-modified-since
+^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers) header-del If-Modified-Since
+
+# Xóa Cache / ETag trên Firebase Remote Config
+^https?:\/\/firebaseremoteconfig\.googleapis\.com\/v1\/projects\/locket-4252a\/.+ header-del if-none-match
+^https?:\/\/firebaseremoteconfig\.googleapis\.com\/v1\/projects\/locket-4252a\/.+ header-del If-None-Match
+^https?:\/\/firebaseremoteconfig\.googleapis\.com\/v1\/projects\/locket-4252a\/.+ header-del if-modified-since
+^https?:\/\/firebaseremoteconfig\.googleapis\.com\/v1\/projects\/locket-4252a\/.+ header-del If-Modified-Since
+^https?:\/\/firebaseremoteconfig\.googleapis\.com\/v1\/projects\/locket-4252a\/.+ header-del x-goog-if-none-match
+
+# Xóa Cache / ETag trên Locket Camera API
+# V23 upload-safe: disabled global Locket API header rewrite: ^https?:\/\/api\.locketcamera\.com\/.+ header-del if-none-match
+# V23 upload-safe: disabled global Locket API header rewrite: ^https?:\/\/api\.locketcamera\.com\/.+ header-del If-None-Match
+# V23 upload-safe: disabled global Locket API header rewrite: ^https?:\/\/api\.locketcamera\.com\/.+ header-del if-modified-since
+# V23 upload-safe: disabled global Locket API header rewrite: ^https?:\/\/api\.locketcamera\.com\/.+ header-del If-Modified-Since
+
+[Script]
+
+# Metadata probe (khong doc noi dung anh, token)
+# Replaced by PTB-DIAG request+response pair; original entry retained for rollback
+# anhtu4nn_probe = type=http-request,pattern=^https?:\/\/(?:api\.locketcamera\.com|us-central1-locket-4252a\.cloudfunctions\.net)\/generateFilteredImage(?:\?.*)?$,script-path=https://locket.anhtu4nn.workers.dev/scripts/probe.js,requires-body=false,timeout=10
+
+# PTB Diagnostics (metadata only; no photos, tokens, or response rewrites)
+# PTB diagnostics disabled after analysis: ptb_request_diag = type=http-request,pattern=^https:\/\/(?:api\.locketcamera\.com|us-central1-locket-4252a\.cloudfunctions\.net)\/generateFilteredImage(?:\?.*)?$,script-path=https://locket.anhtu4nn.workers.dev/scripts/ptb_probe_req.js,requires-body=false,timeout=10
+# PTB diagnostics disabled after analysis: ptb_response_diag = type=http-response,pattern=^https:\/\/(?:api\.locketcamera\.com|us-central1-locket-4252a\.cloudfunctions\.net)\/generateFilteredImage(?:\?.*)?$,script-path=https://locket.anhtu4nn.workers.dev/scripts/ptb_probe_resp.js,requires-body=false,timeout=10
+# Locket Gold - Xóa Header RevenueCat và Firebase
+deleteHeader_RC = type=http-request,pattern=^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers),script-path=https://locketstu.anhtu4nn.workers.dev/api/modules/483b4306-f7b4-4369-8f30-4aad7f9e899e/2d9ace4590ebb1dc275a7e29aea43d382ebdee55157a221e/scripts/legacy/deleteHeader_Firebase.js,timeout=60
+
+deleteHeader_Firebase = type=http-request,pattern=^https?:\/\/firebaseremoteconfig\.googleapis\.com\/v1\/projects\/locket-4252a\/.+,script-path=https://locketstu.anhtu4nn.workers.dev/api/modules/483b4306-f7b4-4369-8f30-4aad7f9e899e/2d9ace4590ebb1dc275a7e29aea43d382ebdee55157a221e/scripts/legacy/deleteHeader_RC.js,timeout=60
+
+# Locket Gold 
+revenuecat = type=http-response,pattern=^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers),script-path=https://locketstu.anhtu4nn.workers.dev/api/modules/483b4306-f7b4-4369-8f30-4aad7f9e899e/2d9ace4590ebb1dc275a7e29aea43d382ebdee55157a221e/scripts/legacy/revenuecat.js,requires-body=true,max-size=-1,timeout=60
+
+locket_rc = type=http-response,pattern=^https:\/\/firebaseremoteconfig\.googleapis\.com\/v1\/projects\/locket-4252a\/.+,script-path=https://locketstu.anhtu4nn.workers.dev/api/modules/483b4306-f7b4-4369-8f30-4aad7f9e899e/2d9ace4590ebb1dc275a7e29aea43d382ebdee55157a221e/scripts/legacy/locketfix.js?v=20261111multi5,requires-body=true,max-size=-1,timeout=60
+
+# Locket Photobooth
+locket_pb_req = type=http-request,pattern=^https?:\/\/(us-central1-locket-4252a\.cloudfunctions\.net|api\.locketcamera\.com)\/generateFilteredImage(?:\?.*)?$,script-path=https://locketstu.anhtu4nn.workers.dev/api/modules/483b4306-f7b4-4369-8f30-4aad7f9e899e/2d9ace4590ebb1dc275a7e29aea43d382ebdee55157a221e/scripts/ptb_307_redirect.js?v=20261111multi5,requires-body=true,max-size=-1,timeout=20,argument="483b4306-f7b4-4369-8f30-4aad7f9e899e.2d9ace4590ebb1dc275a7e29aea43d382ebdee55157a221e"
+# PTB307 local key insertion for own Worker only
+ptb_307_auth = type=http-request,pattern=^https?:\/\/locket\.anhtu4nn\.workers\.dev\/generateFilteredImage(?:\?.*)?$,script-path=https://locketstu.anhtu4nn.workers.dev/api/modules/483b4306-f7b4-4369-8f30-4aad7f9e899e/2d9ace4590ebb1dc275a7e29aea43d382ebdee55157a221e/scripts/ptb_307_auth.js?v=20261110a,requires-body=false,timeout=20,argument="483b4306-f7b4-4369-8f30-4aad7f9e899e.2d9ace4590ebb1dc275a7e29aea43d382ebdee55157a221e"
+
+# Locket Test
+locket_change_profile = type=http-request,pattern=^https:\/\/api\.locketcamera\.com\/changeProfileInfo,script-path=https://locketstu.anhtu4nn.workers.dev/api/modules/483b4306-f7b4-4369-8f30-4aad7f9e899e/2d9ace4590ebb1dc275a7e29aea43d382ebdee55157a221e/scripts/legacy/locket_change_profile.js,timeout=60
+
+# V20 upload safety - wildcard response rewrite disabled: locket_filter_resp = type=http-response,pattern=^https?:\/\/api\.locketcamera\.com\/.+,requires-body=true,max-size=-1,script-path=https://locketstu.anhtu4nn.workers.dev/api/modules/483b4306-f7b4-4369-8f30-4aad7f9e899e/2d9ace4590ebb1dc275a7e29aea43d382ebdee55157a221e/scripts/legacy/locket_filter_resp.js,timeout=60
+
+[Host]
+firebaseremoteconfigrealtime.googleapis.com = 0.0.0.0
+
+[MITM]
+hostname = %APPEND% api.revenuecat.com, firebaseremoteconfig.googleapis.com, api.locketcamera.com, *.locketcamera.com, us-central1-locket-4252a.cloudfunctions.net, locket.anhtu4nn.workers.dev
