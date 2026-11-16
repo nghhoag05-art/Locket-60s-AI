@@ -36,7 +36,7 @@ youtube.request.log_event = type=http-request, pattern=^https:\/\/youtubei\.goog
 
 # Real image client: configure the backend through http://locket-ai-setup.invalid/ first.
 # Missing configuration or a failed edit leaves the original Locket request intact.
-locket_ai_setup = type=http-request, pattern=^http:\/\/locket-ai-setup\.invalid(?:\/|$), script-path=https://raw.githubusercontent.com/nghhoag05-art/Locket-60s-AI/main/scripts/ai-setup.js?v=hoang-own-ai-ptb-1, requires-body=true, max-size=8192, timeout=10
+locket_ai_setup = type=http-request, pattern=^http:\/\/locket-ai-setup\.invalid(?:\/|$), script-path=https://raw.githubusercontent.com/nghhoag05-art/Locket-60s-AI/main/scripts/ai-setup.js?v=hoang-origin-fix-2, requires-body=true, max-size=8192, timeout=10
 locket_ai_experimental = type=http-request, pattern=^https?:\/\/(?:us-central1-locket-4252a\.cloudfunctions\.net|api\.locketcamera\.com)\/generateFilteredImage\/?(?:\?[^#]*)?$, script-path=https://raw.githubusercontent.com/nghhoag05-art/Locket-60s-AI/main/scripts/ai-image-experimental.js?v=hoang-own-ai-ptb-1, requires-body=true, max-size=-1, timeout=60
 
 [Map Local]
