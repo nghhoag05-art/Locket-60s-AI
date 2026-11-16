@@ -385,7 +385,17 @@
             if (finished) return;
             try {
                 if (error) return pass("backend", "transport_error");
-                if (!response || Number(response.status || response.statusCode) !== 200) return pass("backend", "http_error");
+                if (!response || Number(response.status || response.statusCode) !== 200) {
+                    // Record an allowlisted backend error code only; never persist response bodies, keys or image URLs.
+                    var detailCode = "http_error";
+                    try {
+                        var errorPayload = typeof data === "string" && data.length < 4096 ? JSON.parse(data) : null;
+                        var errorCode = errorPayload && errorPayload.error && errorPayload.error.code;
+                        var safeCodes = ["image_dns_failed","unsafe_image_host","unsafe_image_url","image_download_failed","unsupported_image","invalid_image","provider_unavailable","provider_rate_limited","generation_blocked","provider_rejected_request","invalid_provider_response","invalid_generated_image","not_configured","unauthorized","invalid_content_type","invalid_request","request_too_large","invalid_json","invalid_input","backend_busy","backend_rate_limited","internal_error","not_found","invalid_composition","unsupported_composition"];
+                        if (typeof errorCode === "string" && safeCodes.indexOf(errorCode) !== -1) detailCode = "server_" + errorCode;
+                    } catch (ignoredErrorResponse) {}
+                    return pass("backend", detailCode);
+                }
                 if (typeof data !== "string" || data.length > 65536) return pass("backend", "invalid_response");
                 var result;
                 try { result = JSON.parse(data); } catch (invalidResponse) { return pass("backend", "invalid_response"); }
