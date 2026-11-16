@@ -76,11 +76,11 @@ test('unrelated requests pass through', () => {
 test('setup shows catalog version and only whitelisted diagnostic text', () => {
   const marker = 'test-only-private-value-never-render';
   const store = new Map([
-    ['LOCKET_AI_CATALOG_VERSION', 'hakaiz-9c2ea58-83'],
+    ['LOCKET_AI_CATALOG_VERSION', 'hoang-own-ai-ptb-v1'],
     ['LOCKET_AI_STATUS', JSON.stringify({ stage: 'backend', code: 'transport_error', imageUrl: marker, token: marker })],
   ]);
   const html = run({ url: origin + '/', method: 'GET' }, store).value.response.body;
-  assert.match(html, /Đã áp dụng danh mục Hakaiz gồm 83 mục/);
+  assert.match(html, /Đã áp dụng AI và Photobooth Hoàng gồm 83 mục/);
   assert.match(html, /Không kết nối được backend/);
   assert.ok(!html.includes(marker));
 });

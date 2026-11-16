@@ -1,4 +1,4 @@
-"""Run with ``python -m backend_py.server``. No third-party packages required.
+"""Run with ``python -m backend_py.server``. Local composition needs Pillow.
 
 Secrets are read exclusively from the supplied environment. Importing this module
 does not read .env files, start a listener, or make network requests.
@@ -26,6 +26,7 @@ from typing import Mapping
 from urllib.parse import urlsplit
 
 from .storage import FileImageStore, image_type
+from .composition import CompositionError, compose_images, validate_composition_request
 
 
 MIB = 1024 * 1024
@@ -112,6 +113,10 @@ class Config:
     @property
     def configured(self) -> bool:
         return bool(self.api_key.strip() and len(self.access_token) >= 24 and self.public_base_url)
+
+    @property
+    def composition_configured(self) -> bool:
+        return bool(len(self.access_token) >= 24 and self.public_base_url)
 
 
 def read_config(env: Mapping[str, str] | None = None) -> Config:
@@ -397,10 +402,15 @@ class BackendServer(ThreadingHTTPServer):
 
 def create_server(*, config: Config | None = None, env: Mapping[str, str] | None = None,
                   fetch=request_https, resolver=resolve_public_addresses, edit_image=None,
+                  compose_image=None, composition_manifest_path=None, composition_asset_root=None,
                   image_store=None, now=time.time) -> BackendServer:
     config = config or read_config(env)
     store = image_store or FileImageStore(config.data_dir, config.image_ttl_seconds, now)
     edit = edit_image or create_openai_editor(config, fetch)
+    def compose(images, preset_id):
+        return compose_images(images, preset_id, manifest_path=composition_manifest_path,
+                              asset_root=composition_asset_root)
+    composer = compose_image or compose
     state_lock, request_times = threading.Lock(), deque()
     in_flight = 0
 
@@ -430,6 +440,23 @@ def create_server(*, config: Config | None = None, env: Mapping[str, str] | None
             self.close_connection = True
             if self.command != "HEAD":
                 self.wfile.write(encoded)
+            if status >= 400:
+                self.wfile.flush()
+                # On Windows, closing a socket with an unread request body can
+                # reset the connection before the error response reaches the
+                # caller. Discard only a small, already-arriving amount after
+                # rejecting it; never parse it or wait for an attacker to send
+                # the declared Content-Length.
+                deadline, remaining = time.monotonic() + 0.01, 64 * 1024
+                try:
+                    self.connection.settimeout(0.002)
+                    while remaining > 0 and time.monotonic() < deadline:
+                        chunk = self.rfile.read1(min(remaining, 16 * 1024))
+                        if not chunk:
+                            break
+                        remaining -= len(chunk)
+                except OSError:
+                    pass
 
         def _error(self, status, code, message, extra=None):
             self._json(status, {"error": {"code": code, "message": message}}, extra)
@@ -443,7 +470,8 @@ def create_server(*, config: Config | None = None, env: Mapping[str, str] | None
             try:
                 path = self.path.split("?", 1)[0]
                 if self.command == "GET" and path == "/health":
-                    return self._json(200, {"ok": True, "configured": config.configured})
+                    return self._json(200, {"ok": True, "configured": config.configured,
+                                            "compositionConfigured": config.composition_configured})
                 if self.command == "GET" and path.startswith("/images/"):
                     result = store.read(path[len("/images/"):])
                     if result is None:
@@ -459,11 +487,15 @@ def create_server(*, config: Config | None = None, env: Mapping[str, str] | None
                     self.close_connection = True
                     self.wfile.write(data)
                     return
-                if path != "/v1/images/edit":
+                if path not in ("/v1/images/edit", "/v1/images/compose"):
                     return self._error(404, "not_found", "Not found.")
+                is_composition = path == "/v1/images/compose"
                 if self.command != "POST":
                     return self._error(405, "method_not_allowed", "Use POST.", {"Allow": "POST"})
-                if not config.configured:
+                if is_composition:
+                    if not config.composition_configured:
+                        fail(503, "not_configured", "Composition needs a backend access token and public HTTPS URL.")
+                elif not config.configured:
                     fail(503, "not_configured", "The backend needs its API key, access token and public HTTPS URL.")
                 auth = self.headers.get_all("Authorization", [])
                 expected = ("Bearer " + config.access_token).encode("utf-8")
@@ -484,10 +516,25 @@ def create_server(*, config: Config | None = None, env: Mapping[str, str] | None
                     body = json.loads(raw)
                 except (ValueError, OSError):
                     fail(400, "invalid_json", "The request body must be valid JSON.")
-                if (not isinstance(body, dict) or not isinstance(body.get("imageUrl"), str)
-                        or len(body["imageUrl"]) > 4096 or not isinstance(body.get("prompt"), str)
-                        or not body["prompt"].strip() or len(body["prompt"]) > 4096):
-                    fail(400, "invalid_input", "Provide imageUrl and a non-empty prompt of at most 4096 characters.")
+                if is_composition:
+                    if (not isinstance(body, dict) or set(body) - {"imageUrl", "imageUrls", "presetId"}
+                            or not isinstance(body.get("presetId"), str) or not body["presetId"]
+                            or len(body["presetId"]) > 100 or ("imageUrl" in body) == ("imageUrls" in body)):
+                        fail(400, "invalid_input", "Provide presetId and either imageUrl or imageUrls.")
+                    source_urls = [body["imageUrl"]] if "imageUrl" in body else body["imageUrls"]
+                    if (not isinstance(source_urls, list) or len(source_urls) not in (1, 4)
+                            or any(not isinstance(url, str) or not url or len(url) > 4096 for url in source_urls)):
+                        fail(400, "invalid_input", "Provide one source photo, or four photos for a four-slot preset.")
+                    if compose_image is None:
+                        validate_composition_request(body["presetId"], len(source_urls),
+                                                     manifest_path=composition_manifest_path,
+                                                     asset_root=composition_asset_root)
+                else:
+                    if (not isinstance(body, dict) or not isinstance(body.get("imageUrl"), str)
+                            or len(body["imageUrl"]) > 4096 or not isinstance(body.get("prompt"), str)
+                            or not body["prompt"].strip() or len(body["prompt"]) > 4096):
+                        fail(400, "invalid_input", "Provide imageUrl and a non-empty prompt of at most 4096 characters.")
+                    source_urls = [body["imageUrl"]]
                 with state_lock:
                     if in_flight >= config.max_concurrent:
                         fail(429, "backend_busy", "An image is already being generated. Try again later.")
@@ -500,22 +547,39 @@ def create_server(*, config: Config | None = None, env: Mapping[str, str] | None
                     in_flight += 1
                 try:
                     download_deadline = time.monotonic() + config.download_timeout
-                    url = validate_input_url(body["imageUrl"], config, resolver, min(2, config.download_timeout))
-                    remaining = download_deadline - time.monotonic()
-                    if remaining <= 0:
-                        fail(502, "image_download_failed", "The input image could not be downloaded.")
-                    image = download_image(url, config, fetch, remaining)
-                    generated, mime = edit(image, body["prompt"].strip())
+                    images = []
+                    for source_url in source_urls:
+                        remaining = download_deadline - time.monotonic()
+                        if remaining <= 0:
+                            fail(502, "image_download_failed", "The input image could not be downloaded.")
+                        url = validate_input_url(source_url, config, resolver, min(2, remaining))
+                        remaining = download_deadline - time.monotonic()
+                        if remaining <= 0:
+                            fail(502, "image_download_failed", "The input image could not be downloaded.")
+                        images.append(download_image(url, config, fetch, remaining))
+                        if time.monotonic() > download_deadline:
+                            fail(502, "image_download_failed", "The input image could not be downloaded.")
+                    metadata = {}
+                    if is_composition:
+                        generated, mime, metadata = composer(images, body["presetId"])
+                        if (not isinstance(metadata, dict) or metadata.get("sourceImageCount") != len(images)
+                                or type(metadata.get("sourceImageCount")) is not int
+                                or type(metadata.get("slotCount")) is not int or metadata["slotCount"] not in (1, 4)
+                                or len(images) not in (1, metadata["slotCount"]) or mime != "image/png"):
+                            fail(502, "invalid_generated_image", "The image composer did not return a valid image.")
+                        metadata = {"sourceImageCount": metadata["sourceImageCount"], "slotCount": metadata["slotCount"]}
+                    else:
+                        generated, mime = edit(images[0], body["prompt"].strip())
                     if (not isinstance(generated, bytes) or len(generated) > config.max_image_bytes
                             or image_type(generated) != mime):
                         fail(502, "invalid_generated_image", "The image provider did not return a valid image.")
                     filename = store.save(generated, mime)
                     self._json(200, {"outputUrl": f"{config.public_base_url}/images/{filename}",
-                                     "expiresInSeconds": config.image_ttl_seconds})
+                                     "expiresInSeconds": config.image_ttl_seconds, **metadata})
                 finally:
                     with state_lock:
                         in_flight -= 1
-            except AppError as error:
+            except (AppError, CompositionError) as error:
                 self._error(error.status, error.code, error.message)
             except (BrokenPipeError, ConnectionResetError):
                 self.close_connection = True

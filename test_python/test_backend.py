@@ -10,6 +10,7 @@ from pathlib import Path
 import socket
 import tempfile
 import threading
+import time
 import unittest
 from unittest.mock import patch
 from urllib.parse import urlsplit
@@ -22,6 +23,8 @@ from backend_py.server import (
 )
 from backend_py import server as backend_module
 from backend_py.storage import FileImageStore
+from test_python.test_composition import composition_fixture, FOUR_SLOTS, image_bytes
+from PIL import Image
 
 
 def png(rgb):
@@ -102,6 +105,7 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(config.host, "127.0.0.1")
         self.assertEqual(config.port, 8787)
         self.assertFalse(config.configured)
+        self.assertFalse(config.composition_configured)
         self.assertEqual(config.model, "gpt-image-2.5-flare")
         self.assertEqual(config.image_ttl_seconds, 900)
         self.assertEqual(config.max_concurrent, 1)
@@ -117,6 +121,7 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(config.model, "my-model")
         self.assertNotIn(FAKE_API_KEY, repr(config))
         self.assertNotIn(FAKE_ACCESS_TOKEN, repr(config))
+        self.assertTrue(replace(config, api_key="").composition_configured)
 
     def test_unsafe_public_origin_and_config_fail_without_secret_echo(self):
         for origin in ("http://example.com", "https://127.0.0.1", "https://localhost", "https://example.com:443",
@@ -329,7 +334,7 @@ class HttpIntegrationTests(unittest.TestCase):
         clock = [1_800_000_000.0]
         provider = Provider()
         with running(self.config, fetch=provider, resolver=public_resolver, now=lambda: clock[0]) as server:
-            self.assertEqual(json.loads(call(server)[2]), {"ok": True, "configured": True})
+            self.assertEqual(json.loads(call(server)[2]), {"ok": True, "configured": True, "compositionConfigured": True})
             status, headers, body = edit_request(server)
             self.assertEqual(status, 200, body)
             result = json.loads(body)
@@ -451,6 +456,147 @@ class HttpIntegrationTests(unittest.TestCase):
                 "Authorization": "Bearer " + FAKE_ACCESS_TOKEN, "Content-Type": "application/json", "Transfer-Encoding": "chunked"})
             self.assertEqual(result[0], 400)
         self.assertEqual(provider.calls, [])
+
+
+class CompositionHttpTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parent)
+        self.addCleanup(self.temp.cleanup)
+        self.config = make_config(Path(self.temp.name) / "output", api_key="")
+        options, self.preset_id, _, _ = composition_fixture(self.temp.name, four=True)
+        self.options = {"composition_manifest_path": options["manifest_path"],
+                        "composition_asset_root": options["asset_root"]}
+
+    def request(self, server, payload=None, headers=None):
+        return call(server, "POST", "/v1/images/compose",
+                    data=payload if payload is not None else {"presetId": self.preset_id, "imageUrl": SOURCE_URL},
+                    headers=headers if headers is not None else {"Authorization": "Bearer " + FAKE_ACCESS_TOKEN})
+
+    def test_without_openai_key_composes_stores_real_pixels_and_expires(self):
+        provider = Provider()
+        clock = [1_800_000_000.0]
+        with running(self.config, fetch=provider, resolver=public_resolver, now=lambda: clock[0], **self.options) as server:
+            self.assertEqual(json.loads(call(server)[2]), {"ok": True, "configured": False, "compositionConfigured": True})
+            result = self.request(server)
+            self.assertEqual(result[0], 200, result[2])
+            body = json.loads(result[2])
+            self.assertEqual(set(body), {"outputUrl", "expiresInSeconds", "sourceImageCount", "slotCount"})
+            self.assertEqual(body["sourceImageCount"], 1)
+            self.assertEqual(body["slotCount"], 4)
+            self.assertEqual(body["expiresInSeconds"], 900)
+            path = urlsplit(body["outputUrl"]).path
+            downloaded = call(server, path=path)
+            self.assertEqual(downloaded[0], 200)
+            self.assertNotEqual(downloaded[2], SOURCE)
+            with Image.open(io.BytesIO(downloaded[2])) as composite:
+                self.assertEqual(composite.size, (12, 12))
+                for x, y, _, _ in FOUR_SLOTS:
+                    self.assertEqual(composite.getpixel((x + 1, y + 1)), (255, 0, 0, 255))
+            self.assertNotIn(SOURCE_URL.encode(), result[2])
+            clock[0] += 900
+            self.assertEqual(call(server, path=path)[0], 404)
+        self.assertEqual(len(provider.calls), 1)
+        self.assertEqual(provider.calls[0][0], SOURCE_URL)
+        self.assertNotIn("Authorization", provider.calls[0][1]["headers"])
+        self.assertEqual(provider.calls[0][1]["addresses"], ("8.8.8.8",))
+
+    def test_four_input_urls_download_only_sources_and_preserve_order(self):
+        urls = ["https://cdn.locketcamera.com/" + str(index) + ".png" for index in range(4)]
+        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]
+        calls = []
+        def fetch(url, **kwargs):
+            calls.append((url, kwargs))
+            self.assertIn(url, urls)
+            return Response(200, {"content-type": "image/png"}, image_bytes(colors[urls.index(url)]))
+        with running(self.config, fetch=fetch, resolver=public_resolver, **self.options) as server:
+            result = self.request(server, {"presetId": self.preset_id, "imageUrls": urls})
+            self.assertEqual(result[0], 200, result[2])
+            payload = json.loads(result[2])
+            self.assertEqual(payload["sourceImageCount"], 4)
+            self.assertEqual(payload["slotCount"], 4)
+            data = call(server, path=urlsplit(payload["outputUrl"]).path)[2]
+            with Image.open(io.BytesIO(data)) as composite:
+                for (x, y, _, _), color in zip(FOUR_SLOTS, colors):
+                    self.assertEqual(composite.getpixel((x + 1, y + 1)), color + (255,))
+        self.assertEqual([url for url, _ in calls], urls)
+        self.assertTrue(all(request["method"] == "GET" for _, request in calls))
+
+    def test_authentication_counts_unknown_id_and_unsafe_urls_fail_before_download(self):
+        provider = Provider()
+        no_dns = lambda *_: self.fail("No DNS allowed")
+        with running(self.config, fetch=provider, resolver=no_dns, **self.options) as server:
+            self.assertEqual(self.request(server, headers={})[0], 401)
+            bad = ({"presetId": "unsupported", "imageUrl": SOURCE_URL},
+                   {"presetId": self.preset_id, "imageUrls": [SOURCE_URL] * 2},
+                   {"presetId": self.preset_id, "imageUrls": [SOURCE_URL] * 3},
+                   {"presetId": self.preset_id, "imageUrls": [SOURCE_URL] * 5},
+                   {"presetId": self.preset_id, "imageUrl": SOURCE_URL, "imageUrls": [SOURCE_URL]},
+                   {"presetId": self.preset_id, "imageUrls": SOURCE_URL},
+                   {"presetId": self.preset_id, "imageUrl": SOURCE_URL, "overlayUrl": "https://evil.example/asset.png"},
+                   {"presetId": self.preset_id, "imageUrl": "https://evil.example/photo.png"})
+            for payload in bad:
+                with self.subTest(fields=list(payload)):
+                    result = self.request(server, payload)
+                    self.assertEqual(result[0], 400, result[2])
+        self.assertEqual(provider.calls, [])
+
+    def test_invalid_source_pixels_no_fallback_no_output_and_no_sensitive_logs(self):
+        provider = Provider(source=SOURCE[:24])  # Plausible signature, no real pixels.
+        capture = io.StringIO()
+        with redirect_stdout(capture), redirect_stderr(capture), running(
+                self.config, fetch=provider, resolver=public_resolver, **self.options) as server:
+            result = self.request(server)
+            self.assertEqual(result[0], 415)
+            self.assertEqual(code(result), "invalid_image")
+        self.assertFalse(self.config.data_dir.exists())
+        for sensitive in (SOURCE_URL, FAKE_ACCESS_TOKEN, str(self.options["composition_manifest_path"])):
+            self.assertNotIn(sensitive, result[2].decode())
+            self.assertNotIn(sensitive, capture.getvalue())
+
+    def test_download_timeout_is_shared_by_all_four_sources(self):
+        urls = ["https://cdn.locketcamera.com/" + str(index) + ".png" for index in range(4)]
+        calls = []
+        def slow_fetch(url, **kwargs):
+            calls.append(kwargs)
+            time.sleep(0.02)
+            return Response(200, {"content-type": "image/png"}, SOURCE)
+        with running(replace(self.config, download_timeout=0.03), fetch=slow_fetch,
+                     resolver=public_resolver, **self.options) as server:
+            result = self.request(server, {"presetId": self.preset_id, "imageUrls": urls})
+            self.assertEqual(result[0], 502)
+            self.assertEqual(code(result), "image_download_failed")
+        self.assertLessEqual(len(calls), 2)
+        if len(calls) == 2:
+            self.assertLess(calls[1]["timeout"], calls[0]["timeout"])
+        self.assertFalse(self.config.data_dir.exists())
+
+    def test_ai_and_composition_share_rate_and_concurrency_limits(self):
+        config = replace(self.config, api_key=FAKE_API_KEY)
+        with running(config, fetch=Provider(), resolver=public_resolver, **self.options) as server:
+            self.assertEqual(self.request(server)[0], 200)
+            self.assertEqual(edit_request(server)[0], 200)
+            self.assertEqual(self.request(server)[0], 200)
+            result = edit_request(server)
+            self.assertEqual(result[0], 429)
+            self.assertEqual(code(result), "backend_rate_limited")
+        entered, release = threading.Event(), threading.Event()
+        def editor(image, prompt):
+            entered.set()
+            release.wait(timeout=3)
+            return GENERATED, "image/png"
+        with running(config, fetch=Provider(), resolver=public_resolver, edit_image=editor, **self.options) as server:
+            first = []
+            worker = threading.Thread(target=lambda: first.append(edit_request(server)))
+            worker.start()
+            try:
+                self.assertTrue(entered.wait(timeout=1))
+                result = self.request(server)
+                self.assertEqual(result[0], 429)
+                self.assertEqual(code(result), "backend_busy")
+            finally:
+                release.set()
+                worker.join(timeout=2)
+            self.assertEqual(first[0][0], 200)
 
 
 class StorageTests(unittest.TestCase):

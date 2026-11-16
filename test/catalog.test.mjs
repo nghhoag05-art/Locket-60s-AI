@@ -5,9 +5,9 @@ import { createHash } from 'node:crypto';
 import vm from 'node:vm';
 
 const code = await readFile(new URL('../scripts/forceGold4.3_60s_full.js', import.meta.url), 'utf8');
-const catalog = JSON.parse(await readFile(new URL('../references/hakaiz-ai-catalog.json', import.meta.url), 'utf8'));
+const catalog = JSON.parse(await readFile(new URL('../assets/filters/catalog.json', import.meta.url), 'utf8'));
 const endpoint = 'https://firebaseremoteconfig.googleapis.com/v1/projects/locket-4252a/namespaces/firebase:fetch';
-const version = 'hakaiz-9c2ea58-83';
+const version = 'hoang-own-ai-ptb-v1';
 const filterGateNames = ['camera_filter_sheet', 'camera_filters', 'camera_filter', 'filter', 'filters', 'photo_filters', 'ai_filters', 'holiday_effects', 'holiday_filters', 'holiday_filter', 'ar_filters', 'face_filters'];
 const filterUpsellNames = ['filter', 'filters', 'camera_filter', 'camera_filters', 'holiday_filter', 'holiday_filters', 'holiday_effects', 'ai_filter', 'ai_filters'];
 const filterPaywallNames = ['holiday_effects', 'camera_filters', 'camera_filter', 'filters', 'filter', 'ai_filter', 'ai_filters', 'filtered_image', 'filtered_images', 'generate_filtered_image'];

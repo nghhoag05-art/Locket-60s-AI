@@ -8,6 +8,16 @@ const catalog = JSON.parse(await readFile(new URL('../references/hakaiz-ai-catal
 const BACKEND_TOKEN = 'backend-private-token-01234567890123456789';
 const INPUT = 'https://firebasestorage.googleapis.com/v0/b/locket-img/o/photo.jpg?alt=media&token=photo-token';
 const OUTPUT = 'https://ai.example.com/images/abcdefghijklmnopqrstuvwxyz012345.png';
+const FOUR_INPUTS = Array.from({ length: 4 }, (_, index) => INPUT.replace('photo.jpg', `photo-${index}.jpg`));
+const FOUR_SLOT_IDS = new Set([
+  'frame_berry_days', 'frame_happy_snap', 'frame_sky_diary', 'photobooth_4cut',
+  'photobooth_cute', 'pb_holo_4cut', 'pb_scrapbook_ripped_4cut',
+  'pb_ripped_paper_4cut', 'pb_denim_ripped_2x2',
+]);
+
+function composedResult(sourceImageCount = 1, slotCount = 4, extra = {}) {
+  return JSON.stringify({ outputUrl: OUTPUT, expiresInSeconds: 900, sourceImageCount, slotCount, ...extra });
+}
 
 function run(options = {}) {
   const done = [], posts = [], timers = [], logs = [], writes = [];
@@ -272,7 +282,7 @@ for (const filterId of nativeIds) {
   });
 }
 
-test('the pinned catalog retains all 83 entries, including 27 unsupported compositions', () => {
+test('the pinned catalog retains all 83 entries, including 27 compositions', () => {
   assert.equal(catalog.filters.length, 83);
   assert.equal(new Set(catalog.filters.map(filter => filter.id)).size, 83);
   assert.equal(catalog.filters.filter(filter => ['Frames', 'Photobooth'].includes(filter.category)).length, 27);
@@ -280,17 +290,22 @@ test('the pinned catalog retains all 83 entries, including 27 unsupported compos
 
 for (const [index, filter] of catalog.filters.entries()) {
   const composition = ['Frames', 'Photobooth'].includes(filter.category);
-  test(`catalog ${filter.id} ${composition ? 'does not fabricate frame or multi-shot output' : 'dispatches a real editing instruction'}`, () => {
+  test(`catalog ${filter.id} ${composition ? 'dispatches an owned composition' : 'dispatches a real editing instruction'}`, () => {
     const request = index % 2
       ? { imageUrl: INPUT, data: { filter_id: filter.id } }
       : { imageUrl: INPUT, filterId: filter.id };
     const h = run({ request: { body: JSON.stringify(request) } });
     if (composition) {
-      assertPass(h);
-      assert.equal(JSON.parse(h.store.LOCKET_AI_STATUS).code, 'unsupported_composition');
+      sentComposition(h, filter.id);
+      assert.equal(h.done.length, 0, 'no output is fabricated before the owned backend replies');
+      const slotCount = FOUR_SLOT_IDS.has(filter.id) ? 4 : 1;
+      h.respond(null, { status: 200 }, composedResult(1, slotCount));
+      assert.equal(h.done[0].response.status, 200);
+      assert.equal(JSON.parse(h.store.LOCKET_AI_STATUS).code, slotCount === 4 ? 'composition_single_source' : 'composition_success');
       const symbolic = run({ request: { body: JSON.stringify({ imageUrl: INPUT, data: { prompt: filter.prompt } }) } });
-      assertPass(symbolic);
-      assert.equal(JSON.parse(symbolic.store.LOCKET_AI_STATUS).code, 'unsupported_composition');
+      sentComposition(symbolic, filter.id);
+      symbolic.respond(null, { status: 200 }, composedResult(1, slotCount));
+      assert.equal(symbolic.done[0].response.status, 200);
     } else {
       const prompt = sentPrompt(h);
       assert.ok(prompt.length > 30);
@@ -318,6 +333,197 @@ test('catalog IDs and canonical symbolic prompts resolve to the same instruction
     const byId = sentPrompt(run({ request: { body: JSON.stringify({ imageUrl: INPUT, filterId: filter.id }) } }));
     const byPrompt = sentPrompt(run({ request: { body: JSON.stringify({ imageUrl: INPUT, prompt: filter.prompt }) } }));
     assert.equal(byId, byPrompt, filter.id);
+  }
+});
+
+function sentComposition(harness, presetId, images = INPUT) {
+  assert.equal(harness.posts.length, 1);
+  const { settings } = harness.posts[0];
+  assert.equal(settings.url, 'https://ai.example.com/v1/images/compose');
+  assert.deepEqual(settings.headers, { Authorization: `Bearer ${BACKEND_TOKEN}`, 'Content-Type': 'application/json' });
+  assert.equal(settings.timeout, 45);
+  assert.equal(settings['auto-redirect'], false);
+  assert.equal(settings['auto-cookie'], false);
+  assert.deepEqual(JSON.parse(settings.body), {
+    presetId,
+    ...(Array.isArray(images) ? { imageUrls: images } : { imageUrl: images }),
+  });
+}
+
+for (const [alias, canonical] of [
+  ['pb_strawberry', 'frame_berry_days'], ['pb_vintage', 'frame_happy_snap'],
+  ['pb_galaxy', 'frame_sky_diary'], ['photoboot', 'frame_classic_pb'],
+  ['photobooth', 'photobooth_4cut'],
+]) {
+  test(`composition alias ${alias} dispatches canonical ${canonical}`, () => {
+    for (const field of ['filterId', 'filter_id', 'prompt', 'text_prompt', 'instruction']) {
+      for (const nested of [false, true]) {
+        const values = { [field]: `  ${alias.toUpperCase()}  ` };
+        const h = run({ request: { body: JSON.stringify({ imageUrl: INPUT, ...(nested ? { data: values } : values) }) } });
+        sentComposition(h, canonical);
+      }
+    }
+  });
+}
+
+test('native-shaped frame packet with natural-language prompt dispatches composition first', () => {
+  const body = { data: { filter_id: 'frame_classic_pb', prompt: 'Preserve the person and compose this frame.', image_url: INPUT, uid: 'native-private-id' } };
+  const h = run({ request: { body: JSON.stringify(body) } });
+  sentComposition(h, 'frame_classic_pb');
+  h.respond(null, { status: 200 }, composedResult(1, 1));
+  const payload = JSON.parse(h.done[0].response.body);
+  for (const container of [payload.result, payload.result.data]) {
+    for (const key of ['outputUrl', 'output_url', 'url', 'imageUrl', 'image_url']) assert.equal(container[key], OUTPUT);
+  }
+  assert.equal(JSON.parse(h.store.LOCKET_AI_STATUS).code, 'composition_success');
+});
+
+test('selected frame IDs take priority over unrelated prose and symbolic AI prompts', () => {
+  for (const prompt of ['Make the background blue.', 'stk_dio_cash', 'unknown_symbolic_filter', 'x'.repeat(4097)]) {
+    for (const nested of [false, true]) {
+      const selected = { filter_id: 'pb_strawberry' };
+      const h = run({ request: { body: JSON.stringify({ imageUrl: INPUT, prompt, ...(nested ? { data: selected } : selected) }) } });
+      sentComposition(h, 'frame_berry_days');
+    }
+  }
+});
+
+test('unrelated explicit prose remains an AI edit without a selected frame', () => {
+  for (const filterId of [undefined, 'beard', 'unknown_symbolic_filter']) {
+    const h = run({ request: { body: JSON.stringify({ imageUrl: INPUT, prompt: 'Make the background blue.', filterId }) } });
+    assert.equal(sentPrompt(h), 'Make the background blue.');
+    assert.equal(h.posts[0].settings.url, 'https://ai.example.com/v1/images/edit');
+  }
+});
+
+test('composition uses the configured origin when setup stores the full editing endpoint', () => {
+  const h = run({ store: { LOCKET_AI_ENDPOINT: 'https://ai.example.com/v1/images/edit' }, request: { body: JSON.stringify({ imageUrl: INPUT, prompt: 'photoboot' }) } });
+  sentComposition(h, 'frame_classic_pb');
+});
+
+for (const field of ['imageUrls', 'image_urls', 'inputUrls', 'input_urls']) {
+  for (const nested of [false, true]) {
+    for (const imageUrls of [[INPUT], FOUR_INPUTS]) {
+      test(`own composition contract accepts ${nested ? 'data' : 'root'} ${field} with ${imageUrls.length} sources`, () => {
+        const values = { [field]: imageUrls, filter_id: 'photobooth_4cut' };
+        const h = run({ request: { body: JSON.stringify(nested ? { data: values } : values) } });
+        sentComposition(h, 'photobooth_4cut', imageUrls);
+        h.respond(null, { status: 200 }, composedResult(imageUrls.length, 4));
+        assert.equal(h.done[0].response.status, 200);
+        assert.equal(JSON.parse(h.store.LOCKET_AI_STATUS).code, imageUrls.length === 1 ? 'composition_single_source' : 'composition_success');
+      });
+    }
+  }
+}
+
+test('all single-slot frames accept a one-source array without changing its contract', () => {
+  for (const filter of catalog.filters.filter(filter => ['Frames', 'Photobooth'].includes(filter.category) && !FOUR_SLOT_IDS.has(filter.id))) {
+    const h = run({ request: { body: JSON.stringify({ imageUrls: [INPUT], filterId: filter.id }) } });
+    sentComposition(h, filter.id, [INPUT]);
+    h.respond(null, { status: 200 }, composedResult(1, 1));
+    assert.equal(JSON.parse(h.store.LOCKET_AI_STATUS).code, 'composition_success');
+  }
+});
+
+for (const [label, values, expected] of [
+  ['empty array', { imageUrls: [] }, 'invalid_images'],
+  ['two photos', { imageUrls: FOUR_INPUTS.slice(0, 2) }, 'invalid_images'],
+  ['three photos', { imageUrls: FOUR_INPUTS.slice(0, 3) }, 'invalid_images'],
+  ['five photos', { imageUrls: [...FOUR_INPUTS, INPUT] }, 'invalid_images'],
+  ['null', { imageUrls: null }, 'invalid_images'],
+  ['string', { imageUrls: INPUT }, 'invalid_images'],
+  ['object', { imageUrls: { 0: INPUT, length: 1 } }, 'invalid_images'],
+  ['mixed types', { imageUrls: [...FOUR_INPUTS.slice(0, 3), null] }, 'invalid_images'],
+  ['nested array', { imageUrls: [FOUR_INPUTS] }, 'invalid_images'],
+  ['insecure URL', { imageUrls: [INPUT.replace('https:', 'http:')] }, 'invalid_images'],
+  ['URL credentials', { imageUrls: ['https://private:token@images.example.com/photo.jpg'] }, 'invalid_images'],
+  ['fragment URL', { imageUrls: [`${INPUT}#fragment`] }, 'invalid_images'],
+  ['oversized URL', { imageUrls: [`https://images.example.com/${'x'.repeat(8192)}`] }, 'invalid_images'],
+  ['both array aliases', { imageUrls: [INPUT], image_urls: FOUR_INPUTS }, 'invalid_images'],
+  ['root and nested arrays', { imageUrls: [INPUT], data: { imageUrls: FOUR_INPUTS } }, 'invalid_images'],
+  ['array and single', { imageUrls: FOUR_INPUTS, imageUrl: INPUT }, 'invalid_images'],
+  ['nested single and root array', { imageUrls: FOUR_INPUTS, data: { image_url: INPUT } }, 'invalid_images'],
+  ['array for an AI effect', { imageUrls: [INPUT], filterId: 'beard' }, 'composition_required'],
+  ['four sources for one slot', { imageUrls: FOUR_INPUTS, filterId: 'frame_classic_pb' }, 'image_count_mismatch'],
+]) {
+  test(`does not discard sources from ${label}`, () => {
+    const h = run({ request: { body: JSON.stringify({ filterId: 'photobooth_4cut', ...values }) } });
+    assertPass(h);
+    assert.equal(JSON.parse(h.store.LOCKET_AI_STATUS).code, expected);
+    assert.ok(!JSON.stringify(h.writes).includes(INPUT));
+  });
+}
+
+test('input URL extraction stays limited to the root and data fields', () => {
+  for (const values of [{ photos: FOUR_INPUTS }, { attachments: [{ imageUrl: INPUT }] }, { data: { nested: { image_url: INPUT } } }]) {
+    const h = run({ request: { body: JSON.stringify({ filterId: 'photobooth_4cut', ...values }) } });
+    assertPass(h);
+    assert.equal(JSON.parse(h.store.LOCKET_AI_STATUS).code, 'image_missing');
+  }
+});
+
+test('composition never forwards private packet fields or saves request data', () => {
+  const h = run({ request: { body: JSON.stringify({ data: {
+    image_urls: FOUR_INPUTS, filter_id: 'frame_berry_days', prompt: 'private frame instruction',
+    uid: 'private-composer-id', profile: { token: 'private-profile-token' }, callbackUrl: 'https://private.example.com',
+  } }) } });
+  sentComposition(h, 'frame_berry_days', FOUR_INPUTS);
+  h.respond(null, { status: 200 }, composedResult(4, 4));
+  for (const value of ['private frame instruction', 'private-composer-id', 'private-profile-token', 'private.example.com', 'locket-account-secret', 'session=private']) {
+    assert.ok(!JSON.stringify(h.posts[0].settings).includes(value));
+  }
+  for (const value of [...FOUR_INPUTS, OUTPUT, BACKEND_TOKEN, 'frame_berry_days', 'ai.example.com']) {
+    assert.ok(!JSON.stringify(h.writes).includes(value));
+  }
+  for (const write of h.writes) assert.deepEqual(Object.keys(JSON.parse(write.value)).sort(), ['code', 'stage', 'timestamp']);
+});
+
+for (const [label, extra] of [
+  ['missing source count', { sourceImageCount: undefined }],
+  ['missing slot count', { slotCount: undefined }],
+  ['wrong source count', { sourceImageCount: 4 }],
+  ['wrong slot count', { slotCount: 1 }],
+  ['string source count', { sourceImageCount: '1' }],
+  ['string slot count', { slotCount: '4' }],
+  ['missing expiry', { expiresInSeconds: undefined }],
+  ['zero expiry', { expiresInSeconds: 0 }],
+  ['fractional expiry', { expiresInSeconds: 1.5 }],
+  ['string expiry', { expiresInSeconds: '900' }],
+]) {
+  test(`composition rejects ${label} rather than inventing capture metadata`, () => {
+    const h = run({ request: { body: JSON.stringify({ imageUrl: INPUT, filterId: 'photobooth_4cut' }) } });
+    h.respond(null, { status: 200 }, composedResult(1, 4, extra));
+    assert.deepEqual(h.done, [{}]);
+    assert.equal(JSON.parse(h.store.LOCKET_AI_STATUS).code, 'invalid_response');
+  });
+}
+
+test('composition cannot return any of its four source image URLs as a successful output', () => {
+  const images = [...FOUR_INPUTS.slice(0, 3), `${OUTPUT}?private-token=source`];
+  const h = run({ request: { body: JSON.stringify({ imageUrls: images, filterId: 'photobooth_4cut' }) } });
+  h.respond(null, { status: 200 }, composedResult(4, 4));
+  assert.deepEqual(h.done, [{}]);
+  assert.equal(JSON.parse(h.store.LOCKET_AI_STATUS).code, 'unchanged_output');
+});
+
+test('four-source response cannot claim to have composed just one source', () => {
+  const h = run({ request: { body: JSON.stringify({ imageUrls: FOUR_INPUTS, filterId: 'photobooth_4cut' }) } });
+  h.respond(null, { status: 200 }, composedResult(1, 4));
+  assert.deepEqual(h.done, [{}]);
+});
+
+test('composition shares the timeout guard and ignores late or duplicate callbacks', () => {
+  const h = run({ request: { body: JSON.stringify({ imageUrl: INPUT, filterId: 'photobooth_4cut' }) } });
+  h.expire();
+  h.respond(null, { status: 200 }, composedResult());
+  h.respond(null, { status: 200 }, composedResult());
+  assert.deepEqual(h.done, [{}]);
+  assert.equal(JSON.parse(h.store.LOCKET_AI_STATUS).code, 'timeout');
+});
+
+test('composition still passes through when its own endpoint or token is absent', () => {
+  for (const store of [{ LOCKET_AI_ENDPOINT: '' }, { LOCKET_AI_TOKEN: '' }]) {
+    assertPass(run({ store, request: { body: JSON.stringify({ imageUrl: INPUT, filterId: 'photobooth_4cut' }) } }));
   }
 });
 

@@ -1,0 +1,629 @@
+{
+  "version": 1,
+  "presets": {
+    "frame_berry_days": {
+      "kind": "photobooth",
+      "asset": "assets/filters/cd35a1977b986b371b67af9f69631632e5f680b71c48edf96af84ca5698f92b5.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          70,
+          430,
+          570
+        ],
+        [
+          515,
+          70,
+          430,
+          570
+        ],
+        [
+          55,
+          670,
+          430,
+          570
+        ],
+        [
+          515,
+          670,
+          430,
+          570
+        ]
+      ]
+    },
+    "frame_happy_snap": {
+      "kind": "photobooth",
+      "asset": "assets/filters/eacdce6ee2b8aebfbaf9486a4b0e84088de64fdc6580450f957d8e833d7e721e.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          70,
+          430,
+          570
+        ],
+        [
+          515,
+          70,
+          430,
+          570
+        ],
+        [
+          55,
+          670,
+          430,
+          570
+        ],
+        [
+          515,
+          670,
+          430,
+          570
+        ]
+      ]
+    },
+    "frame_sky_diary": {
+      "kind": "photobooth",
+      "asset": "assets/filters/90d5beb335191edee5c3162681e0ddcf36abcb27685f67264ded099046c19b88.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          70,
+          430,
+          570
+        ],
+        [
+          515,
+          70,
+          430,
+          570
+        ],
+        [
+          55,
+          670,
+          430,
+          570
+        ],
+        [
+          515,
+          670,
+          430,
+          570
+        ]
+      ]
+    },
+    "photobooth_4cut": {
+      "kind": "photobooth",
+      "asset": "assets/filters/dcbc0b8035c8693b6094d296c9d4ef9cb6f75eb04ea64b204c7596d5fa9909b5.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          70,
+          430,
+          570
+        ],
+        [
+          515,
+          70,
+          430,
+          570
+        ],
+        [
+          55,
+          670,
+          430,
+          570
+        ],
+        [
+          515,
+          670,
+          430,
+          570
+        ]
+      ]
+    },
+    "photobooth_cute": {
+      "kind": "photobooth",
+      "asset": "assets/filters/464b56b75637dd958e7eff1835af9c9f8027023296c0db28fb2f7c91793ffb8d.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          70,
+          430,
+          570
+        ],
+        [
+          515,
+          70,
+          430,
+          570
+        ],
+        [
+          55,
+          670,
+          430,
+          570
+        ],
+        [
+          515,
+          670,
+          430,
+          570
+        ]
+      ]
+    },
+    "pb_holo_4cut": {
+      "kind": "photobooth",
+      "asset": "assets/filters/64d3450e6c0dcb0b01616bd316f25b46202955ec72f6c94fb76d54916ebf572f.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          70,
+          430,
+          570
+        ],
+        [
+          515,
+          70,
+          430,
+          570
+        ],
+        [
+          55,
+          670,
+          430,
+          570
+        ],
+        [
+          515,
+          670,
+          430,
+          570
+        ]
+      ]
+    },
+    "pb_scrapbook_ripped_4cut": {
+      "kind": "photobooth",
+      "asset": "assets/filters/66fecdd3c67fa475755cb3728d3e8090b0cf7958893c9ce34e82f204534c0c00.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          70,
+          430,
+          570
+        ],
+        [
+          515,
+          70,
+          430,
+          570
+        ],
+        [
+          55,
+          670,
+          430,
+          570
+        ],
+        [
+          515,
+          670,
+          430,
+          570
+        ]
+      ]
+    },
+    "pb_ripped_paper_4cut": {
+      "kind": "photobooth",
+      "asset": "assets/filters/94e7c6532e2777c9921da5c937bc6232f680862c172805b664076fd76a56e2cc.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          70,
+          430,
+          570
+        ],
+        [
+          515,
+          70,
+          430,
+          570
+        ],
+        [
+          55,
+          670,
+          430,
+          570
+        ],
+        [
+          515,
+          670,
+          430,
+          570
+        ]
+      ]
+    },
+    "pb_denim_ripped_2x2": {
+      "kind": "photobooth",
+      "asset": "assets/filters/4da8fe19b21802d0996156d78b0f8df936f1e8ff7b8663a082c9b699900d0276.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          70,
+          430,
+          570
+        ],
+        [
+          515,
+          70,
+          430,
+          570
+        ],
+        [
+          55,
+          670,
+          430,
+          570
+        ],
+        [
+          515,
+          670,
+          430,
+          570
+        ]
+      ]
+    },
+    "frame_classic_pb": {
+      "kind": "frame",
+      "asset": "assets/filters/464bc95bca85801235b873c9b8e84407921e78ff94cd83bf1feebaabb4eb0a4f.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "sticker_b_nh_lu_n_minh_tu": {
+      "kind": "frame",
+      "asset": "assets/filters/55b5963b4187d1ec679660353d39484155be023dde7f07db5e2c4c5869158030.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "cmt_locket": {
+      "kind": "frame",
+      "asset": "assets/filters/1c93dc1231c3e0fdf22d3f95f00070d3ecde8fcd63ba16750e50efd6dbef1d69.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "khung_hello_kitty_pastel_ng_t_ng_o": {
+      "kind": "frame",
+      "asset": "assets/filters/f41d53c8d3ed927bd6f2e802fe71d2cd58d1f3c777b4ba4ef3964d6d456053c3.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "khung_hello_kitty_h_ng_pastel": {
+      "kind": "frame",
+      "asset": "assets/filters/2b59154490ce923d19205745a79f2579071673f865ec75786119508c84e087b2.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "khung_nh_n_pastel_vi_n_ren": {
+      "kind": "frame",
+      "asset": "assets/filters/351234a29b21e9f340bc426fed99c2e2c6b5a720a3dc4dd8f471019b7e9f356a.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "khung_nh_hoa_pastel_vi_n_xanh_m_nh": {
+      "kind": "frame",
+      "asset": "assets/filters/74a24c35482ac6da93f9d2a287357ecf02bde0fb2b4e597f358ff3873eb4fa4a.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "khung_nh_vu_ng_m_ng_nh_n_b_c": {
+      "kind": "frame",
+      "asset": "assets/filters/fc9915ad7b47259f91484905e439cdd8bfe34776f16037112d31e47d5c451e22.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "khung_kh_ng_gian_xanh_pastel": {
+      "kind": "frame",
+      "asset": "assets/filters/374e1a31011190edd7adaf743c78ae2900a952e70e7b1888c0809399c94f750c.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "khung_vu_ng_ng_i_sao_h_ng_pastel": {
+      "kind": "frame",
+      "asset": "assets/filters/b097f4d1f0a869ae259c528d91e59e261923f3d7e1f5acb6d3a8d32242e9e10e.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "khung_nh_pastel_vi_n_s_h_i_c_u": {
+      "kind": "frame",
+      "asset": "assets/filters/ddef19128cbc24e57f1d39be53d017d5f06688780bb2424d2e94f6ff5975744a.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "khung_nh_shin_chan_vi_n_m_nh": {
+      "kind": "frame",
+      "asset": "assets/filters/37523542cc73d50f01cb03f69871df5f7d7bd1e84dd2ed84fdf2fffb604c5a42.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "khung_anh_o_kitty_v_sao": {
+      "kind": "frame",
+      "asset": "assets/filters/b50cc37ebc26f57fec904a9ed0672753bb2d905eb70be7893e1e92517f228dee.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "khung_xanh_v_tay_sao_v_ng": {
+      "kind": "frame",
+      "asset": "assets/filters/39e2cc4557ad5429e15357281589877f7a7f9e44759e18a79dacc60ec441d15f.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "sinh_nh_t_hello_kitty_ho_i_c": {
+      "kind": "frame",
+      "asset": "assets/filters/cc37ce7f66882869026e1f04f3276376b304daa9cd0a6259f248922b6c617c41.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "pb_single_y2k_silver_holo": {
+      "kind": "frame",
+      "asset": "assets/filters/96936d7d22411a1dedabd7ab7e7bfa538692b10cddf437e5af734f1e4f925765.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "pb_single_denim_ripped": {
+      "kind": "frame",
+      "asset": "assets/filters/7e22460ac03071fc3b520e5a14acf4b4c7a4a5dfc99e205681a438b7d70c4a43.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    },
+    "pb_single_film_nostalgia": {
+      "kind": "frame",
+      "asset": "assets/filters/496a159f2c2b20195705c58146fae9621a4663c4753e7267cf05fb5c781cefb9.png",
+      "size": [
+        1000,
+        1400
+      ],
+      "slots": [
+        [
+          55,
+          65,
+          890,
+          1165
+        ]
+      ]
+    }
+  },
+  "aliases": {
+    "pb_strawberry": "frame_berry_days",
+    "pb_vintage": "frame_happy_snap",
+    "pb_galaxy": "frame_sky_diary",
+    "photobooth_4cut": "photobooth_4cut",
+    "photobooth_cute": "photobooth_cute",
+    "pb_holo_4cut": "pb_holo_4cut",
+    "pb_scrapbook_ripped_4cut": "pb_scrapbook_ripped_4cut",
+    "pb_ripped_paper_4cut": "pb_ripped_paper_4cut",
+    "pb_denim_ripped_2x2": "pb_denim_ripped_2x2",
+    "photoboot": "frame_classic_pb",
+    "sticker_b_nh_lu_n_minh_tu": "sticker_b_nh_lu_n_minh_tu",
+    "cmt_locket": "cmt_locket",
+    "khung_hello_kitty_pastel_ng_t_ng_o": "khung_hello_kitty_pastel_ng_t_ng_o",
+    "khung_hello_kitty_h_ng_pastel": "khung_hello_kitty_h_ng_pastel",
+    "khung_nh_n_pastel_vi_n_ren": "khung_nh_n_pastel_vi_n_ren",
+    "khung_nh_hoa_pastel_vi_n_xanh_m_nh": "khung_nh_hoa_pastel_vi_n_xanh_m_nh",
+    "khung_nh_vu_ng_m_ng_nh_n_b_c": "khung_nh_vu_ng_m_ng_nh_n_b_c",
+    "khung_kh_ng_gian_xanh_pastel": "khung_kh_ng_gian_xanh_pastel",
+    "khung_vu_ng_ng_i_sao_h_ng_pastel": "khung_vu_ng_ng_i_sao_h_ng_pastel",
+    "khung_nh_pastel_vi_n_s_h_i_c_u": "khung_nh_pastel_vi_n_s_h_i_c_u",
+    "khung_nh_shin_chan_vi_n_m_nh": "khung_nh_shin_chan_vi_n_m_nh",
+    "khung_anh_o_kitty_v_sao": "khung_anh_o_kitty_v_sao",
+    "khung_xanh_v_tay_sao_v_ng": "khung_xanh_v_tay_sao_v_ng",
+    "sinh_nh_t_hello_kitty_ho_i_c": "sinh_nh_t_hello_kitty_ho_i_c",
+    "pb_single_y2k_silver_holo": "pb_single_y2k_silver_holo",
+    "pb_single_denim_ripped": "pb_single_denim_ripped",
+    "pb_single_film_nostalgia": "pb_single_film_nostalgia",
+    "photobooth": "photobooth_4cut"
+  }
+}

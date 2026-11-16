@@ -11,6 +11,8 @@
     var watchdog;
     var endpointPattern = /^https:\/\/(?:api\.locketcamera\.com|us-central1-locket-4252a\.cloudfunctions\.net)\/generateFilteredImage\/?(?:\?[^#]*)?$/i;
     var imageFields = ["imageUrl", "image_url", "inputUrl", "input_url", "url", "downloadUrl", "download_url"];
+    // Optional arrays are our composition API contract, not a verified native capture format.
+    var imageArrayFields = ["imageUrls", "image_urls", "inputUrls", "input_urls"];
     // Self-contained preset data derived from references/hakaiz-ai-catalog.json and
     // dtuandzxyz/Locket-Filter-Module js/locket_pb_req.js at 9c2ea58aaea3f6d9258b60d3cf1621ea6a4ccdce.
     // Missing source prompts use explicit editing instructions, never symbolic IDs.
@@ -142,40 +144,43 @@
         "stk_dio_frosty": "frosty",
         "stk_dio_influencer": "influencer"
     };
-    // One input image cannot implement asset-based frames or a real four-shot sequence.
-    var unsupportedCompositions = {
-        "frame_berry_days": true,
-        "pb_strawberry": true,
-        "frame_happy_snap": true,
-        "pb_vintage": true,
-        "frame_sky_diary": true,
-        "pb_galaxy": true,
-        "photobooth_4cut": true,
-        "photobooth_cute": true,
-        "pb_holo_4cut": true,
-        "pb_scrapbook_ripped_4cut": true,
-        "pb_ripped_paper_4cut": true,
-        "pb_denim_ripped_2x2": true,
-        "frame_classic_pb": true,
-        "photoboot": true,
-        "sticker_b_nh_lu_n_minh_tu": true,
-        "cmt_locket": true,
-        "khung_hello_kitty_pastel_ng_t_ng_o": true,
-        "khung_hello_kitty_h_ng_pastel": true,
-        "khung_nh_n_pastel_vi_n_ren": true,
-        "khung_nh_hoa_pastel_vi_n_xanh_m_nh": true,
-        "khung_nh_vu_ng_m_ng_nh_n_b_c": true,
-        "khung_kh_ng_gian_xanh_pastel": true,
-        "khung_vu_ng_ng_i_sao_h_ng_pastel": true,
-        "khung_nh_pastel_vi_n_s_h_i_c_u": true,
-        "khung_nh_shin_chan_vi_n_m_nh": true,
-        "khung_anh_o_kitty_v_sao": true,
-        "khung_xanh_v_tay_sao_v_ng": true,
-        "sinh_nh_t_hello_kitty_ho_i_c": true,
-        "pb_single_y2k_silver_holo": true,
-        "pb_single_denim_ripped": true,
-        "pb_single_film_nostalgia": true,
-        "photobooth": true
+    // Number of transparent photo slots in the self-hosted frame assets.
+    // A single source may fill four slots; this does not create four separate shots.
+    var compositions = {
+        "frame_berry_days": 4,
+        "frame_happy_snap": 4,
+        "frame_sky_diary": 4,
+        "photobooth_4cut": 4,
+        "photobooth_cute": 4,
+        "pb_holo_4cut": 4,
+        "pb_scrapbook_ripped_4cut": 4,
+        "pb_ripped_paper_4cut": 4,
+        "pb_denim_ripped_2x2": 4,
+        "frame_classic_pb": 1,
+        "sticker_b_nh_lu_n_minh_tu": 1,
+        "cmt_locket": 1,
+        "khung_hello_kitty_pastel_ng_t_ng_o": 1,
+        "khung_hello_kitty_h_ng_pastel": 1,
+        "khung_nh_n_pastel_vi_n_ren": 1,
+        "khung_nh_hoa_pastel_vi_n_xanh_m_nh": 1,
+        "khung_nh_vu_ng_m_ng_nh_n_b_c": 1,
+        "khung_kh_ng_gian_xanh_pastel": 1,
+        "khung_vu_ng_ng_i_sao_h_ng_pastel": 1,
+        "khung_nh_pastel_vi_n_s_h_i_c_u": 1,
+        "khung_nh_shin_chan_vi_n_m_nh": 1,
+        "khung_anh_o_kitty_v_sao": 1,
+        "khung_xanh_v_tay_sao_v_ng": 1,
+        "sinh_nh_t_hello_kitty_ho_i_c": 1,
+        "pb_single_y2k_silver_holo": 1,
+        "pb_single_denim_ripped": 1,
+        "pb_single_film_nostalgia": 1
+    };
+    var compositionAliases = {
+        "pb_strawberry": "frame_berry_days",
+        "pb_vintage": "frame_happy_snap",
+        "pb_galaxy": "frame_sky_diary",
+        "photoboot": "frame_classic_pb",
+        "photobooth": "photobooth_4cut"
     };
 
     function finish(value) {
@@ -233,9 +238,48 @@
         return "";
     }
 
+    function readInputs(body) {
+        var containers = [body, body.data];
+        var arrays = [];
+        var hasSingleField = false;
+        for (var i = 0; i < containers.length; i++) {
+            if (!record(containers[i])) continue;
+            for (var j = 0; j < imageArrayFields.length; j++) {
+                if (Object.prototype.hasOwnProperty.call(containers[i], imageArrayFields[j])) {
+                    arrays.push(containers[i][imageArrayFields[j]]);
+                }
+            }
+            for (var k = 0; k < imageFields.length; k++) {
+                if (Object.prototype.hasOwnProperty.call(containers[i], imageFields[k])) hasSingleField = true;
+            }
+        }
+        if (arrays.length) {
+            // Reject ambiguous or invalid arrays as a whole, never silently discard a source.
+            if (arrays.length !== 1 || hasSingleField || !Array.isArray(arrays[0])) return { code: "invalid_images" };
+            var urls = arrays[0];
+            if ((urls.length !== 1 && urls.length !== 4) || !urls.every(function (url) { return !!httpsUrl(url, true); })) {
+                return { code: "invalid_images" };
+            }
+            return { imageUrls: urls, urls: urls };
+        }
+        var url = readImage(body, imageFields) || readImage(body.data, imageFields);
+        return url ? { imageUrl: url, urls: [url] } : { code: "image_missing" };
+    }
+
+    function resolveComposition(value) {
+        if (typeof value !== "string") return null;
+        var id = value.trim().toLowerCase();
+        if (!Object.prototype.hasOwnProperty.call(compositions, id)) {
+            if (!Object.prototype.hasOwnProperty.call(compositionAliases, id)) return null;
+            id = compositionAliases[id];
+        }
+        return { presetId: id, slotCount: compositions[id] };
+    }
+
     function resolvePreset(value) {
         var id = value.trim().toLowerCase();
-        if (Object.prototype.hasOwnProperty.call(unsupportedCompositions, id)) return { code: "unsupported_composition" };
+        var composition = resolveComposition(id);
+        if (composition) return composition;
         if (Object.prototype.hasOwnProperty.call(prompts, id)) return { prompt: prompts[id] };
         if (Object.prototype.hasOwnProperty.call(promptAliases, id)) {
             return { prompt: prompts[promptAliases[id]] };
@@ -245,6 +289,12 @@
 
     function readPrompt(body) {
         var containers = [body, body.data];
+        // A selected frame determines the operation even if native packets include prose.
+        for (var c = 0; c < containers.length; c++) {
+            if (!record(containers[c])) continue;
+            var frame = resolveComposition(containers[c].filterId) || resolveComposition(containers[c].filter_id);
+            if (frame) return frame;
+        }
         var fields = ["prompt", "text_prompt", "instruction"];
         for (var i = 0; i < containers.length; i++) {
             if (!record(containers[i])) continue;
@@ -310,20 +360,24 @@
         var body;
         try { body = JSON.parse($request.body); } catch (invalidJson) { return pass("input", "invalid_json"); }
         if (!record(body)) return pass("input", "invalid_json");
-        var inputUrl = readImage(body, imageFields) || readImage(body.data, imageFields);
-        if (!inputUrl) return pass("input", "image_missing");
+        var inputs = readInputs(body);
+        if (inputs.code) return pass("input", inputs.code);
         var selected = readPrompt(body);
-        if (!selected.prompt) return pass("input", selected.code);
-        var prompt = selected.prompt;
-        var input = httpsUrl(inputUrl, true);
+        if (!selected.prompt && !selected.presetId) return pass("input", selected.code);
+        var composing = !!selected.presetId;
+        if (!composing && inputs.imageUrls) return pass("input", "composition_required");
+        if (composing && inputs.urls.length > selected.slotCount) return pass("input", "image_count_mismatch");
+        var backendBody = composing ? { presetId: selected.presetId } : { prompt: selected.prompt };
+        if (inputs.imageUrls) backendBody.imageUrls = inputs.imageUrls;
+        else backendBody.imageUrl = inputs.imageUrl;
 
         // HTTP client timeout is in seconds. The local guard stays below the module's 60 seconds.
         watchdog = setTimeout(function () { pass("backend", "timeout"); }, 50000);
         diagnostic("backend", "started");
         $httpClient.post({
-            url: endpoint.origin + "/v1/images/edit",
+            url: endpoint.origin + (composing ? "/v1/images/compose" : "/v1/images/edit"),
             headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
-            body: JSON.stringify({ imageUrl: inputUrl, prompt: prompt }),
+            body: JSON.stringify(backendBody),
             timeout: 45,
             "auto-redirect": false,
             "auto-cookie": false
@@ -339,8 +393,16 @@
                 var output = httpsUrl(outputUrl, false);
                 if (!output || output.origin !== endpoint.origin) return pass("backend", "invalid_output");
                 if (!/^\/images\/[A-Za-z0-9_-]{24,128}\.(?:png|jpe?g|webp)$/.test(output.path)) return pass("backend", "invalid_output");
-                if (output.origin === input.origin && output.path === input.path) return pass("backend", "unchanged_output");
-                diagnostic("result", "success");
+                for (var i = 0; i < inputs.urls.length; i++) {
+                    var input = httpsUrl(inputs.urls[i], true);
+                    if (output.origin === input.origin && output.path === input.path.split("?")[0]) return pass("backend", "unchanged_output");
+                }
+                if (composing) {
+                    if (result.sourceImageCount !== inputs.urls.length || result.slotCount !== selected.slotCount ||
+                        typeof result.expiresInSeconds !== "number" || result.expiresInSeconds <= 0 ||
+                        result.expiresInSeconds % 1 !== 0) return pass("backend", "invalid_response");
+                    diagnostic("result", result.sourceImageCount === 1 && result.slotCount > 1 ? "composition_single_source" : "composition_success");
+                } else diagnostic("result", "success");
                 return finish(nativeResponse(outputUrl));
             } catch (error) {
                 return pass("backend", "invalid_response");

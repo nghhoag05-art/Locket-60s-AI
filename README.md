@@ -1,17 +1,17 @@
-# Locket-60s AI — Python 3.14 + OpenAI
+# Locket-60s AI + Photobooth Hoàng
 
 ![Ảnh giới thiệu Zalo](assets/zalo-intro.png)
 
-Giữ dữ liệu của Hoàng: cấu hình 60 giây, 219 caption, bộ lọc, ảnh/lời giới thiệu Zalo và YouTube. Phần AI gọi OpenAI Images API qua backend Python trên máy tính của bạn, rồi trả URL ảnh kết quả cho script Locket.
+Thêm AI và Photobooth vào module cá nhân đang dùng của Hoàng. Giữ nguyên cấu hình 60 giây, 219 caption, ảnh/lời giới thiệu Zalo và YouTube. Phần AI gọi OpenAI bằng tài khoản riêng của bạn; phần khung/Photobooth được ghép thật bằng Python trên máy bạn.
 
-Đã bổ sung phần danh mục còn thiếu của Hakaiz: 83 định nghĩa hiệu ứng, 10 nhóm và 63 mục chọn nhanh, kèm hình xem trước và các cờ chọn hiệu ứng. Đây là giao diện chọn trong Locket; trang `locket-ai-setup.invalid` chỉ dùng kết nối và xem chẩn đoán.
+Danh mục có 83 mục, 10 nhóm và 63 mục chọn nhanh: 56 hiệu ứng AI cùng 27 khung/Photobooth. Script AI, danh mục và ảnh xem trước đều tải từ repo của Hoàng; việc tạo ảnh/ghép khung dùng backend riêng, không chuyển yêu cầu tới Worker anhtu4nn/Hakaiz hoặc dùng mã truy cập module của họ. Nguồn tham khảo vẫn được ghi công trong `SOURCES.md`.
 
-**Trạng thái:** đã kiểm thử tự động bằng dữ liệu giả lập trên Python 3.14.5. Chưa kiểm tra bằng API key thật hoặc trên iPhone. Module cần backend đang chạy, HTTPS và tài khoản OpenAI API có quyền sử dụng model; cài module riêng lẻ chưa tạo được ảnh.
+**Trạng thái:** đã kiểm tra bộ ghép ảnh bằng PNG/JPEG/WebP và đọc lại pixel ảnh kết quả, cùng kiểm thử HTTP/client bằng dữ liệu mô phỏng. Chưa gọi OpenAI thật hoặc xác nhận luồng chụp trên iPhone. Module cần backend đang chạy và HTTPS; AI cần tài khoản OpenAI API có quyền dùng model. Cài module riêng lẻ chưa cung cấp máy chủ tạo ảnh.
 
 ## Chạy trên Windows
 
 1. Thu hồi khóa API đã từng gửi vào chat hoặc công khai; tạo khóa mới tại [OpenAI API keys](https://platform.openai.com/api-keys). Nhập khóa mới trực tiếp trên máy, không gửi lại vào chat.
-2. Mở `Start-Locket-Backend.cmd` trong thư mục này. Bộ khởi chạy ưu tiên Python 3.14 ở `%LOCALAPPDATA%\Python\pythoncore-3.14-64\python.exe`, sau đó thử `py -3.14`. Không cần cài thư viện pip.
+2. Mở `Start-Locket-Backend.cmd` trong thư mục này. Bộ khởi chạy ưu tiên Python 3.14 ở `%LOCALAPPDATA%\Python\pythoncore-3.14-64\python.exe`, sau đó thử `py -3.14`. Nó tạo môi trường `.venv` riêng và tự cài Pillow 13.0.0 từ `requirements.txt` nếu cần. Lần đầu chuẩn bị thư viện cần Internet; không thay đổi Python toàn máy.
 3. Trên Windows, cửa sổ **Locket AI - Nhap khoa OpenAI** sẽ mở riêng. Bấm vào ô nhập, dùng **Ctrl+V** dán nguyên khóa vừa tạo rồi bấm **OK**. Khóa được che bằng dấu `*`; **Cancel** hoặc nút X hủy khởi chạy. Không dán giá trị bị che/rút gọn trong danh sách khóa. Nếu nhập trống hoặc sai định dạng, cửa sổ mở lại với hướng dẫn, tối đa ba lần. Bộ khởi chạy tạo một mã kết nối backend và hiện mã đó một lần trong cửa sổ CMD của bạn. Giữ mã này để nhập vào Shadowrocket.
 4. Bộ khởi chạy dùng `cloudflared` đã cài trên máy để mở HTTPS tạm thời tới `127.0.0.1:8787`. Sao chép dòng `Shadowrocket backend URL: https://…trycloudflare.com`.
 5. Giữ cửa sổ và máy tính hoạt động. `Ctrl+C` dừng backend cùng tiến trình tunnel do nó tạo. Mỗi lần mở lại có thể đổi URL và mã kết nối; cập nhật lại trên điện thoại.
@@ -26,7 +26,7 @@ Nếu không dùng tunnel tạm, chạy `run_backend.py` bằng Python 3.14 và 
 
 ## Kết nối Shadowrocket
 
-Thêm hoặc làm mới [module Locket 60s AI + YouTube](https://raw.githubusercontent.com/nghhoag05-art/Locket-60s-AI/main/module/locket-60s-ai-youtube.module). Chỉ bật một module Locket để tránh trùng quy tắc; bật HTTPS Decryption với chứng chỉ CA đang dùng.
+Thêm hoặc làm mới [module cá nhân Locket 60s AI + YouTube + Photobooth](https://raw.githubusercontent.com/nghhoag05-art/Locket-60s-AI/refs/heads/main/module/locket-60s-ai-youtube.module). Đây vẫn là URL module cũ. Chỉ bật một module Locket để tránh trùng quy tắc; bật HTTPS Decryption với chứng chỉ CA đang dùng.
 
 Trên điện thoại đang chạy Shadowrocket, mở:
 
@@ -34,11 +34,19 @@ Trên điện thoại đang chạy Shadowrocket, mở:
 
 Đây là trang được script trả trực tiếp trên thiết bị. Nhập URL HTTPS và mã kết nối hiện trong cửa sổ backend, rồi lưu. Hai giá trị được lưu trong Shadowrocket; có nút xóa kết nối. Không dùng token đăng nhập Locket hoặc API key OpenAI làm mã kết nối.
 
-Sau khi cập nhật module, tải lại các script, đóng hẳn rồi mở lại Locket. Hook Firebase mới bỏ các header kiểm tra cache; response danh mục được đánh dấu `UPDATE` theo nguồn Hakaiz. Trang kết nối sẽ hiện **Đã áp dụng danh mục Hakaiz gồm 83 mục** sau khi script cấu hình mới chạy trên thiết bị. Nếu vẫn chỉ thấy danh sách cũ, kiểm tra trạng thái này trước khi thử nhập khóa lại.
+Sau khi cập nhật module, tải lại các script, đóng hẳn rồi mở lại Locket. Hook Firebase bỏ các header kiểm tra cache; response danh mục được đánh dấu `UPDATE`. Trang kết nối sẽ hiện **Đã áp dụng AI và Photobooth Hoàng gồm 83 mục** sau khi script cấu hình mới chạy trên thiết bị. Nếu vẫn chỉ thấy danh sách cũ, kiểm tra trạng thái này trước khi thử nhập khóa lại.
 
 Trang kết nối cũng hiện lần xử lý gần nhất bằng thông báo cố định (thiếu cấu hình, thiếu trường ảnh, hiệu ứng chưa hỗ trợ, lỗi backend hoặc có ảnh mới). Phần chẩn đoán chỉ lưu mã bước, mã trạng thái và thời điểm; không lưu prompt, URL ảnh, token hay UID.
 
-Khi nhận diện được yêu cầu tạo filter, script chỉ gửi `{imageUrl, prompt}` và mã kết nối riêng tới backend. Backend tải ảnh, gửi ảnh cùng prompt tới OpenAI và lưu ảnh đầu ra. Script chỉ trả thành công khi nhận URL kết quả hợp lệ; thiếu cấu hình hoặc lỗi thì giữ yêu cầu gốc cho Locket xử lý.
+Khi nhận diện được yêu cầu AI, script chỉ gửi `{imageUrl, prompt}` và mã kết nối riêng tới `/v1/images/edit`. Backend tải ảnh, gửi ảnh cùng prompt tới OpenAI và lưu ảnh đầu ra. Với khung/Photobooth, script gửi `{presetId, imageUrl}` hoặc `{presetId, imageUrls}` tới `/v1/images/compose`; backend ghép với PNG trong repo, không gọi OpenAI. Không chuyển token Locket hoặc toàn bộ request của app. Chỉ trả thành công khi nhận URL ảnh mới hợp lệ; thiếu cấu hình hoặc lỗi thì giữ yêu cầu gốc cho Locket xử lý.
+
+## Photobooth và khung ảnh
+
+- 18 khung một ảnh và 9 bố cục Photobooth bốn ô được xử lý trên backend của Hoàng.
+- Khi nhận bốn ảnh riêng, bộ ghép giữ thứ tự và đặt mỗi ảnh vào một ô. Khi chỉ nhận một ảnh, bộ ghép dùng lại ảnh đó trong bốn ô; trạng thái ghi rõ đây là một nguồn ảnh, không báo đã chụp bốn lần.
+- Các trường `ptbFrameId` và `captureCountHint` được ghép theo cấu trúc bản tham khảo. Chúng chỉ là gợi ý cho Locket; chưa xác nhận phiên bản app trên iPhone sẽ chụp/gửi bốn ảnh riêng. Các trường mảng `imageUrls`/`image_urls`/`inputUrls`/`input_urls` là hợp đồng bridge hỗ trợ thêm, chưa có chứng cứ chúng được Locket phát ra.
+- Khung được vẽ thành PNG trong dự án với vùng ảnh trong suốt và chữ Hoàng. Một số ảnh nguồn đã bị gỡ; công cụ chuẩn bị tài nguyên thay bằng biểu tượng riêng, không phụ thuộc ảnh xem trước bên ngoài khi chạy.
+- Input được xoay theo EXIF, cắt vừa ô, ghép alpha, rồi xuất PNG mới không mang EXIF/GPS. Chỉ chọn preset có sẵn; client không được yêu cầu backend tải một overlay URL bất kỳ.
 
 ## Cấu hình backend
 
@@ -63,10 +71,10 @@ Repo có Dockerfile Python 3.14; khi tự triển khai cần truyền bí mật 
 Chạy bằng Python 3.14 đã cài:
 
 ```powershell
-& "$env:LOCALAPPDATA\Python\pythoncore-3.14-64\python.exe" -m unittest discover -s test_python -v
+& ".\.venv\Scripts\python.exe" -B -m unittest discover -s test_python -v
 ```
 
-Kiểm tra JavaScript bằng Node.js 22 trở lên:
+Sau khi bộ khởi chạy chuẩn bị `.venv`, kiểm tra Python bằng `.\.venv\Scripts\python.exe -B -m unittest discover -s test_python`. Kiểm tra JavaScript bằng Node.js 22 trở lên:
 
 ```powershell
 npm test
@@ -74,7 +82,7 @@ npm test
 
 Các kiểm thử dùng dữ liệu mô phỏng, không gọi OpenAI hay tạo phí. Chúng kiểm tra hợp đồng HTTP, xác thực, lỗi provider, giới hạn, lưu/xóa ảnh, bộ khởi chạy, script và trang kết nối.
 
-Client hỗ trợ toàn bộ 35 ID hiệu ứng gốc và các ID/prompt tương ứng trong danh mục Hakaiz. Có 56 mục hiệu ứng trong danh mục được đổi thành chỉ dẫn chỉnh ảnh thật; 27 mục khung/Photobooth đi qua nguyên trạng với chẩn đoán `unsupported_composition`, vì backend hiện chỉ chỉnh một ảnh và chưa ghép khung hoặc chụp bốn ảnh. Không trả ảnh gốc rồi báo đã tạo ảnh AI. Hình xem trước/khung vẫn tải từ các host tài nguyên của nguồn Hakaiz, nên phụ thuộc nguồn đó còn hoạt động.
+Client hỗ trợ toàn bộ 35 ID hiệu ứng gốc cùng 56 hiệu ứng và 27 preset ghép khung của danh mục cá nhân. Các URL tài nguyên đang dùng đều trỏ tới repo của Hoàng. Không trả ảnh gốc rồi báo đã tạo ảnh AI. `tools/prepare_owned_catalog.py --download` là công cụ chuẩn bị lại tài nguyên công khai, không chạy trong backend; không nhận ảnh hoặc bí mật cá nhân.
 
 Chưa có request/response thực tế thu từ iPhone; schema hoặc cách Locket nhận ảnh có thể khác với mã hiện tại. Schema chưa biết đi qua nguyên trạng. Kiểm thử danh mục và client không xác nhận nút đã bấm được trên mọi phiên bản Locket; cần thử lại trên thiết bị sau khi tải danh mục mới. Ngân sách chờ provider mặc định 32 giây để nằm trong thời gian chờ của script; tác vụ chậm có thể thất bại dù phía provider vẫn tính phí.
 

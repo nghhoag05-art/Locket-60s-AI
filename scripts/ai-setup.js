@@ -46,6 +46,11 @@
             prompt_missing: "Chưa tìm thấy mô tả hiệu ứng trong yêu cầu Locket.",
             unknown_preset: "Hiệu ứng này chưa được nhận diện.",
             unsupported_composition: "Mục này là khung/Photobooth. Backend hiện chưa ghép khung hoặc tạo bố cục nhiều ảnh.",
+            invalid_images: "Danh sách ảnh chưa hợp lệ. Photobooth nhận một ảnh hoặc bốn ảnh riêng.",
+            image_count_mismatch: "Số ảnh chưa phù hợp với khung đã chọn.",
+            composition_required: "Danh sách nhiều ảnh chỉ dùng cho khung hoặc Photobooth.",
+            composition_success: "Backend của Hoàng đã ghép ảnh vào khung và trả ảnh kết quả mới.",
+            composition_single_source: "Đã ghép Photobooth từ một ảnh đầu vào. Các ô dùng lại ảnh này, không phải bốn lần chụp riêng.",
             prompt_too_long: "Mô tả hiệu ứng vượt giới hạn hỗ trợ.",
             started: "Đã gửi yêu cầu chỉnh ảnh tới backend.",
             timeout: "Backend chưa trả kết quả trong thời gian chờ.",
@@ -99,7 +104,7 @@
         var html = '<!doctype html><html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
             '<title>Kết nối AI cho Locket</title><style>body{font:16px system-ui;margin:0;background:#faf7f0;color:#25241f}main{max-width:520px;margin:40px auto;padding:24px}h1{font-size:28px}label{display:block;margin-top:20px;font-weight:600}input{box-sizing:border-box;width:100%;padding:12px;margin:8px 0;border:1px solid #c9c5bb;border-radius:10px;font:inherit}button{padding:12px 20px;background:#bd8b23;border:0;border-radius:10px;font:inherit;color:#fff;cursor:pointer}small,p{line-height:1.55}.secondary{background:#e9e5da;color:#34312a;margin-top:12px}.status{padding:12px;border-radius:10px;background:#ede8da}</style>' +
             '<main><h1>Kết nối AI cho Locket</h1><p class="status">' + (configured ? "Đã lưu kết nối. Chưa xác nhận backend tạo ảnh thành công." : "Chưa có kết nối backend.") + '</p>' +
-            '<p class="status">' + (read("LOCKET_AI_CATALOG_VERSION") === "hakaiz-9c2ea58-83" ? "Đã áp dụng danh mục Hakaiz gồm 83 mục. Khung/Photobooth chưa được backend ghép ảnh." : "Chưa ghi nhận danh mục Hakaiz mới. Cập nhật module rồi đóng và mở lại Locket để tải cấu hình.") + '</p>' +
+            '<p class="status">' + (read("LOCKET_AI_CATALOG_VERSION") === "hoang-own-ai-ptb-v1" ? "Đã áp dụng AI và Photobooth Hoàng gồm 83 mục. Tài nguyên được tải từ repo của Hoàng." : "Chưa ghi nhận danh mục Hoàng mới. Cập nhật module rồi đóng và mở lại Locket để tải cấu hình.") + '</p>' +
             '<p class="status">' + escapeHtml(diagnosticText()) + '</p>' +
             '<p>Chạy backend Python trên máy tính, rồi nhập địa chỉ HTTPS và mã kết nối hiện trong cửa sổ backend. API key OpenAI chỉ nhập ở máy tính.</p>' +
             '<form method="post" action="' + origin + '/save">' + hidden +

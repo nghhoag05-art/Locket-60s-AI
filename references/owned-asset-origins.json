@@ -1,0 +1,583 @@
+{
+  "source": {
+    "repo": "dtuandzxyz/Locket-Filter-Module",
+    "commit": "9c2ea58aaea3f6d9258b60d3cf1621ea6a4ccdce",
+    "path": "js/locketfix.js"
+  },
+  "assets": [
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/cmt_locket.png",
+      "path": "assets/filters/85df093b258ae5fcf50b43eb6aa663d1fb31c797a98575767183a449067db459.png",
+      "sha256": "85df093b258ae5fcf50b43eb6aa663d1fb31c797a98575767183a449067db459",
+      "bytes": 5564,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/khung_anh_o_kitty_v_sao.png",
+      "path": "assets/filters/d2dc461ec54b0a5147525945525796ed6f06c4069b6a9bd21842dc2ea5dcd419.png",
+      "sha256": "d2dc461ec54b0a5147525945525796ed6f06c4069b6a9bd21842dc2ea5dcd419",
+      "bytes": 7263,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/khung_hello_kitty_h_ng_pastel.png",
+      "path": "assets/filters/15d8cee9e52d5916f976560125109d7a176d6dc15711fbc59186e1653cbda49a.png",
+      "sha256": "15d8cee9e52d5916f976560125109d7a176d6dc15711fbc59186e1653cbda49a",
+      "bytes": 6759,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/khung_hello_kitty_pastel_ng_t_ng_o.png",
+      "path": "assets/filters/93169cf0dd79d1377f24371079d94879ee12d21f7e83b0fa67f998d718a16937.png",
+      "sha256": "93169cf0dd79d1377f24371079d94879ee12d21f7e83b0fa67f998d718a16937",
+      "bytes": 7028,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/khung_kh_ng_gian_xanh_pastel.png",
+      "path": "assets/filters/c881b0ad57c0cd45f37ff476c49dcc38decb00ef3c36a47fd44cf3049d428602.png",
+      "sha256": "c881b0ad57c0cd45f37ff476c49dcc38decb00ef3c36a47fd44cf3049d428602",
+      "bytes": 6858,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/khung_nh_hoa_pastel_vi_n_xanh_m_nh.png",
+      "path": "assets/filters/281c23d50ad93399fe0be5ea8602a2f4b1f38b2d5be01fc2040b0a89fd1a1c15.png",
+      "sha256": "281c23d50ad93399fe0be5ea8602a2f4b1f38b2d5be01fc2040b0a89fd1a1c15",
+      "bytes": 7197,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/khung_nh_n_pastel_vi_n_ren.png",
+      "path": "assets/filters/63cffdf1472a30d22ad19b30a9ed662dbf21ccad3def4e385b6fec22ad89af9a.png",
+      "sha256": "63cffdf1472a30d22ad19b30a9ed662dbf21ccad3def4e385b6fec22ad89af9a",
+      "bytes": 6959,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/khung_nh_pastel_vi_n_s_h_i_c_u.png",
+      "path": "assets/filters/50bc1ae5433a6c26c98a564587b00e34279b552c9f3de5f8ded3f0785e3edbc0.png",
+      "sha256": "50bc1ae5433a6c26c98a564587b00e34279b552c9f3de5f8ded3f0785e3edbc0",
+      "bytes": 6668,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/khung_nh_shin_chan_vi_n_m_nh.png",
+      "path": "assets/filters/b078508da1a718f0bfd71949f5a23485d98384f67c970f05e4c6fae78ac96b09.png",
+      "sha256": "b078508da1a718f0bfd71949f5a23485d98384f67c970f05e4c6fae78ac96b09",
+      "bytes": 7056,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/khung_nh_vu_ng_m_ng_nh_n_b_c.png",
+      "path": "assets/filters/23ca68d57a7b1b0dd05d637362bf05cc055e9b0126737a8a370c01ae9d287f66.png",
+      "sha256": "23ca68d57a7b1b0dd05d637362bf05cc055e9b0126737a8a370c01ae9d287f66",
+      "bytes": 6105,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/khung_vu_ng_ng_i_sao_h_ng_pastel.png",
+      "path": "assets/filters/c12bfeffb19f1ad207c2a78bd40687fb16f7afb413bdc8992b4e2b8fb05135be.png",
+      "sha256": "c12bfeffb19f1ad207c2a78bd40687fb16f7afb413bdc8992b4e2b8fb05135be",
+      "bytes": 7000,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/khung_xanh_v_tay_sao_v_ng.png",
+      "path": "assets/filters/38148f896929e7dd193185adb7b86c68ed17a4cad0a0e6843fb3d23b141f6187.png",
+      "sha256": "38148f896929e7dd193185adb7b86c68ed17a4cad0a0e6843fb3d23b141f6187",
+      "bytes": 7522,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/pb_denim_ripped_2x2.png",
+      "path": "assets/filters/b27c12ecf15988c95b5d332a059c1eb455e5a789edac4337884be3861e10c402.png",
+      "sha256": "b27c12ecf15988c95b5d332a059c1eb455e5a789edac4337884be3861e10c402",
+      "bytes": 6606,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/pb_galaxy.png",
+      "path": "assets/filters/ee637e17dc04999c73ed6f97ad8d44ffb3ec13ca2deb2fc5d31e9cb9666fff87.png",
+      "sha256": "ee637e17dc04999c73ed6f97ad8d44ffb3ec13ca2deb2fc5d31e9cb9666fff87",
+      "bytes": 6010,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/pb_holo_4cut.png",
+      "path": "assets/filters/afc8d6b41e18e0f1866dfb2b0b299f6a44a21000d81d3ba9e2a065080eb27fdf.png",
+      "sha256": "afc8d6b41e18e0f1866dfb2b0b299f6a44a21000d81d3ba9e2a065080eb27fdf",
+      "bytes": 5790,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/pb_ripped_paper_4cut.png",
+      "path": "assets/filters/d0b40988a666765988683488ed7440f38f54a4668930243ba2cd982d9cd498f9.png",
+      "sha256": "d0b40988a666765988683488ed7440f38f54a4668930243ba2cd982d9cd498f9",
+      "bytes": 6340,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/pb_scrapbook_ripped_4cut.png",
+      "path": "assets/filters/845362665fe35173012354d530d1bf0526c339ad58d4bec61d06a1b52be8d86a.png",
+      "sha256": "845362665fe35173012354d530d1bf0526c339ad58d4bec61d06a1b52be8d86a",
+      "bytes": 7615,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/pb_single_denim_ripped.png",
+      "path": "assets/filters/3ef909654c6bba56d664197b30ebaa6192204eac81a231b1bb84fa612bc8a189.png",
+      "sha256": "3ef909654c6bba56d664197b30ebaa6192204eac81a231b1bb84fa612bc8a189",
+      "bytes": 6711,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/pb_single_film_nostalgia.png",
+      "path": "assets/filters/5471b84341645824fb9f54db6fe95200963d396520c8c8c11f346029249c2cb1.png",
+      "sha256": "5471b84341645824fb9f54db6fe95200963d396520c8c8c11f346029249c2cb1",
+      "bytes": 7061,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/pb_single_y2k_silver_holo.png",
+      "path": "assets/filters/f47404a46fde9f72d7174beb1a727349ab3d4f940ec5049f48d4f9c955962e87.png",
+      "sha256": "f47404a46fde9f72d7174beb1a727349ab3d4f940ec5049f48d4f9c955962e87",
+      "bytes": 7752,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/pb_strawberry.png",
+      "path": "assets/filters/7797b2fe6cac4ecbec27978e80868e5f9c6706b4fec2214198a43c53b694c6b5.png",
+      "sha256": "7797b2fe6cac4ecbec27978e80868e5f9c6706b4fec2214198a43c53b694c6b5",
+      "bytes": 6533,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/pb_vintage.png",
+      "path": "assets/filters/1dd0b2b65bbe4fae00819729dca01014bb22daa7a3a95e08edc8e9122bea3667.png",
+      "sha256": "1dd0b2b65bbe4fae00819729dca01014bb22daa7a3a95e08edc8e9122bea3667",
+      "bytes": 5924,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/photoboot.png",
+      "path": "assets/filters/9ffcd14c60f1439dadee8ca6557b44b48e7e452432e68a3e8985184ebfd77f0b.png",
+      "sha256": "9ffcd14c60f1439dadee8ca6557b44b48e7e452432e68a3e8985184ebfd77f0b",
+      "bytes": 4999,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/photobooth_4cut.png",
+      "path": "assets/filters/9d688c54340a662876fbd28ea35d49bdd10ead7854ee137e90dd031f2bf37e19.png",
+      "sha256": "9d688c54340a662876fbd28ea35d49bdd10ead7854ee137e90dd031f2bf37e19",
+      "bytes": 5907,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/photobooth_cute.png",
+      "path": "assets/filters/549dbb4c271d69387b7538a76c4d1893f239d1ad6625a85096af8457b0d8d0db.png",
+      "sha256": "549dbb4c271d69387b7538a76c4d1893f239d1ad6625a85096af8457b0d8d0db",
+      "bytes": 5711,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/sinh_nh_t_hello_kitty_ho_i_c.png",
+      "path": "assets/filters/e5c34929a9534d4543b3d4f349ce2dd0119344de026d9e5685bbb26d56e62b19.png",
+      "sha256": "e5c34929a9534d4543b3d4f349ce2dd0119344de026d9e5685bbb26d56e62b19",
+      "bytes": 5983,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/frames/sticker_b_nh_lu_n_minh_tu.png",
+      "path": "assets/filters/8ff8b9142907d16de2101c75d057da60258e27e5e545f7db79442bd739d32381.png",
+      "sha256": "8ff8b9142907d16de2101c75d057da60258e27e5e545f7db79442bd739d32381",
+      "bytes": 6348,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_cute_zombie.png",
+      "path": "assets/filters/90448560e3d2ee8b7b9c9b765c0a00920669cc38412275ab85747a85b5b1fee4.png",
+      "sha256": "90448560e3d2ee8b7b9c9b765c0a00920669cc38412275ab85747a85b5b1fee4",
+      "bytes": 5963,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_fire_flame.png",
+      "path": "assets/filters/b152acdb8267eb445ddbd0d4e356f09a6b7621bea85c1dbf8e307ebf335f1a4f.png",
+      "sha256": "b152acdb8267eb445ddbd0d4e356f09a6b7621bea85c1dbf8e307ebf335f1a4f",
+      "bytes": 4958,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_fireworks.png",
+      "path": "assets/filters/9c9819405cdef86b867af87ab892d43837bde604f574458bfe1bde7948cae0d2.png",
+      "sha256": "9c9819405cdef86b867af87ab892d43837bde604f574458bfe1bde7948cae0d2",
+      "bytes": 5946,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_fortnite_llama.png",
+      "path": "assets/filters/980829be57bfb9522405618ca3576fe31114e1e3b3c2327913b56c320b35dc5a.png",
+      "sha256": "980829be57bfb9522405618ca3576fe31114e1e3b3c2327913b56c320b35dc5a",
+      "bytes": 5859,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_giant_spider.png",
+      "path": "assets/filters/8b5b07eb2ff3ff89eef1d05066c97d368813e6ed1200a8e4762e527db35fcd2c.png",
+      "sha256": "8b5b07eb2ff3ff89eef1d05066c97d368813e6ed1200a8e4762e527db35fcd2c",
+      "bytes": 6148,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_golden_hour.png",
+      "path": "assets/filters/432254d6bf74f1b1779039cd05d253b4ebdda269b1e8f2d057ce02cd6b70041e.png",
+      "sha256": "432254d6bf74f1b1779039cd05d253b4ebdda269b1e8f2d057ce02cd6b70041e",
+      "bytes": 5995,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_harry_potter.png",
+      "path": "assets/filters/cb06f7dd30b6c3bb97f297a17c15b0d68e28f2a44b2dab2b0e5b0fb2ba784ae2.png",
+      "sha256": "cb06f7dd30b6c3bb97f297a17c15b0d68e28f2a44b2dab2b0e5b0fb2ba784ae2",
+      "bytes": 5743,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_jungle_leaf.png",
+      "path": "assets/filters/02869a87a4ae4d0a4aa73456ef4612b0583a5390bd7d427812734399df9c97bd.png",
+      "sha256": "02869a87a4ae4d0a4aa73456ef4612b0583a5390bd7d427812734399df9c97bd",
+      "bytes": 5403,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_minecraft.png",
+      "path": "assets/filters/498a3b3f01d977bdd890ba2bcfd88b806fdafb0756faf51d1a97d11d835c84da.png",
+      "sha256": "498a3b3f01d977bdd890ba2bcfd88b806fdafb0756faf51d1a97d11d835c84da",
+      "bytes": 5646,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_new_year_2026.png",
+      "path": "assets/filters/2643f4b82785812263d7307682d65260995b9ea409e4c8c851e332fe1129a60a.png",
+      "sha256": "2643f4b82785812263d7307682d65260995b9ea409e4c8c851e332fe1129a60a",
+      "bytes": 6925,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_ocean_underwater.png",
+      "path": "assets/filters/8c96515be502b30e7c9fd33b242c3d46e367c1afa5063ccd7c84b209a8099e3d.png",
+      "sha256": "8c96515be502b30e7c9fd33b242c3d46e367c1afa5063ccd7c84b209a8099e3d",
+      "bytes": 7006,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_pirate_hat.png",
+      "path": "assets/filters/dab1b255b80548bb2ead1fd7f10ef6958a289e48321a65cb64a33aafc61a7c70.png",
+      "sha256": "dab1b255b80548bb2ead1fd7f10ef6958a289e48321a65cb64a33aafc61a7c70",
+      "bytes": 4783,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_rain_storm.png",
+      "path": "assets/filters/9d58c6b199cb03b67eaf6b4be2d378fb22cb775b1d52d1249d919651e8b1eaca.png",
+      "sha256": "9d58c6b199cb03b67eaf6b4be2d378fb22cb775b1d52d1249d919651e8b1eaca",
+      "bytes": 6156,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_rose_flower.png",
+      "path": "assets/filters/20aa35343466f6913db6ac1ea4891d2f3b577452450ca31952bf956ded5c7e02.png",
+      "sha256": "20aa35343466f6913db6ac1ea4891d2f3b577452450ca31952bf956ded5c7e02",
+      "bytes": 5890,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_shrek_ogre.png",
+      "path": "assets/filters/e536eb69566badd52ca0165259e2ef858a955ce6a5c3549f66d04b2cd7e4ca2f.png",
+      "sha256": "e536eb69566badd52ca0165259e2ef858a955ce6a5c3549f66d04b2cd7e4ca2f",
+      "bytes": 5889,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_spooky_ghost.png",
+      "path": "assets/filters/af633090ea976ea486b72e3696db443571fffb32746d0977b47f4d88d502f2d8.png",
+      "sha256": "af633090ea976ea486b72e3696db443571fffb32746d0977b47f4d88d502f2d8",
+      "bytes": 6276,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_superhero_cape.png",
+      "path": "assets/filters/545e82de6e5e6ab412b6f8d64914b2da07ee56e532b37cf537b3edc1c1ed57c8.png",
+      "sha256": "545e82de6e5e6ab412b6f8d64914b2da07ee56e532b37cf537b3edc1c1ed57c8",
+      "bytes": 6418,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_ufo_alien.png",
+      "path": "assets/filters/34739033ef894f29403a5e6918eda5b61de735919902ff648aa3f0181451bcfe.png",
+      "sha256": "34739033ef894f29403a5e6918eda5b61de735919902ff648aa3f0181451bcfe",
+      "bytes": 5348,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_volcano_lava.png",
+      "path": "assets/filters/6cf140fa7950bb6bfe2d6c0d31d18623578e1757918171bee071d2e8404258b8.png",
+      "sha256": "6cf140fa7950bb6bfe2d6c0d31d18623578e1757918171bee071d2e8404258b8",
+      "bytes": 5980,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://locket-vip.mhiep20077.workers.dev/assets/stickers/stk_watercolor_art.png",
+      "path": "assets/filters/6a4063b037e7426db2891fe2617cdb8678b2370e76571fe7b9218b3db86b82a8.png",
+      "sha256": "6a4063b037e7426db2891fe2617cdb8678b2370e76571fe7b9218b3db86b82a8",
+      "bytes": 6316,
+      "generatedFallback": true
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_bearded.png",
+      "path": "assets/filters/9cfdbf6ed8e9be34d3a6c119ef924a782570cf8346c8cdbe25a98980994fda1b.png",
+      "sha256": "9cfdbf6ed8e9be34d3a6c119ef924a782570cf8346c8cdbe25a98980994fda1b",
+      "bytes": 32729,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_bleached_hair.png",
+      "path": "assets/filters/0565cdd15d442d325bdb1b47a308d5a16d95b9b041a1f644dfe1053c1e0bbdfd.png",
+      "sha256": "0565cdd15d442d325bdb1b47a308d5a16d95b9b041a1f644dfe1053c1e0bbdfd",
+      "bytes": 41532,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_bob.png",
+      "path": "assets/filters/1d89d4ab44cfd528c7f6150880ebbe372b8cbaaaa81a9865068d9048baff0201.png",
+      "sha256": "1d89d4ab44cfd528c7f6150880ebbe372b8cbaaaa81a9865068d9048baff0201",
+      "bytes": 47190,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_bowling_ball.png",
+      "path": "assets/filters/fd910141517c897604f72c6b117ce75f1aa02b5fef5f4760cd67b4aab55d5b19.png",
+      "sha256": "fd910141517c897604f72c6b117ce75f1aa02b5fef5f4760cd67b4aab55d5b19",
+      "bytes": 32850,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_braces.png",
+      "path": "assets/filters/35b899dd760ff62c45aece8cecd98d994fbc1e0ad8a0b23feb6f785b277b4148.png",
+      "sha256": "35b899dd760ff62c45aece8cecd98d994fbc1e0ad8a0b23feb6f785b277b4148",
+      "bytes": 26822,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_buns.png",
+      "path": "assets/filters/80f2b6be54645a7a2b7135034e92d26b8e8535db8905d3eabab53a42caf7b159.png",
+      "sha256": "80f2b6be54645a7a2b7135034e92d26b8e8535db8905d3eabab53a42caf7b159",
+      "bytes": 37589,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_bye_brows.png",
+      "path": "assets/filters/8eaf0a974402177dd1ec4fffee5b2a41fcb6d3400e38450a3e4f735e9c8424c6.png",
+      "sha256": "8eaf0a974402177dd1ec4fffee5b2a41fcb6d3400e38450a3e4f735e9c8424c6",
+      "bytes": 39221,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_cash.png",
+      "path": "assets/filters/a6f68aa451a0272ebea7565421457404c6e2a7775876f40f7da5b4d508dd2b6d.png",
+      "sha256": "a6f68aa451a0272ebea7565421457404c6e2a7775876f40f7da5b4d508dd2b6d",
+      "bytes": 35622,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_clown.png",
+      "path": "assets/filters/b2f5544fab26652bc0d30bddda91497bfb9e986e1b8f63cd34a27b688e6c0664.png",
+      "sha256": "b2f5544fab26652bc0d30bddda91497bfb9e986e1b8f63cd34a27b688e6c0664",
+      "bytes": 40725,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_cowboy.png",
+      "path": "assets/filters/61bdd9313a3ef601de7fe28f2c833eabfda728ff2df5022573fdbd529e2332cb.png",
+      "sha256": "61bdd9313a3ef601de7fe28f2c833eabfda728ff2df5022573fdbd529e2332cb",
+      "bytes": 39332,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_cutesy.png",
+      "path": "assets/filters/0507ef0f7e541e06690aaab3fe8369fb491850ba87846f0df77eba00282298dc.png",
+      "sha256": "0507ef0f7e541e06690aaab3fe8369fb491850ba87846f0df77eba00282298dc",
+      "bytes": 41983,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_disco.png",
+      "path": "assets/filters/abc771a51518de956b17a3c92f30cd18f0fc4212fdcf53a2a9201458ccc1b1eb.png",
+      "sha256": "abc771a51518de956b17a3c92f30cd18f0fc4212fdcf53a2a9201458ccc1b1eb",
+      "bytes": 36921,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_easter_bunny.png",
+      "path": "assets/filters/545ce4739bd068fea92fbf2348310a0a5b9b063e8952af0f1f35c6089e000d00.png",
+      "sha256": "545ce4739bd068fea92fbf2348310a0a5b9b063e8952af0f1f35c6089e000d00",
+      "bytes": 34190,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_easter_chick.png",
+      "path": "assets/filters/f90b3146c5622537e40fac5e4003695298d354866e84b7a86775c884bf737674.png",
+      "sha256": "f90b3146c5622537e40fac5e4003695298d354866e84b7a86775c884bf737674",
+      "bytes": 34810,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_elf.png",
+      "path": "assets/filters/e2c694beed2e2bd5a7fba0a7bf6b239a694e88071691dc2298b36ae015409e33.png",
+      "sha256": "e2c694beed2e2bd5a7fba0a7bf6b239a694e88071691dc2298b36ae015409e33",
+      "bytes": 38070,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_flower_crown.png",
+      "path": "assets/filters/5493312318e58adb72b1bd70fd8c181a65db1985f169417588b1f7ca289c8a4b.png",
+      "sha256": "5493312318e58adb72b1bd70fd8c181a65db1985f169417588b1f7ca289c8a4b",
+      "bytes": 43175,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_frosty.png",
+      "path": "assets/filters/538ea38f2c11f76bdd31fb91b24ca898ba74c554cbda803c47e4b020ff92d1d2.png",
+      "sha256": "538ea38f2c11f76bdd31fb91b24ca898ba74c554cbda803c47e4b020ff92d1d2",
+      "bytes": 40055,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_giraffe.png",
+      "path": "assets/filters/255622fdfa8777e6694850853611bc2689d2636a26855fc981e93c09f93aace3.png",
+      "sha256": "255622fdfa8777e6694850853611bc2689d2636a26855fc981e93c09f93aace3",
+      "bytes": 88862,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_happy_birthday.png",
+      "path": "assets/filters/1b945c174915d5eda178f612796723636e029e4c0bbb2bd474415e8c5e21a85b.png",
+      "sha256": "1b945c174915d5eda178f612796723636e029e4c0bbb2bd474415e8c5e21a85b",
+      "bytes": 57813,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_influencer.png",
+      "path": "assets/filters/6e18b7ef82f1103d561d143fc211d8e185874432b188257916ac79ef5569cc98.png",
+      "sha256": "6e18b7ef82f1103d561d143fc211d8e185874432b188257916ac79ef5569cc98",
+      "bytes": 56793,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_leprechaun.png",
+      "path": "assets/filters/0f98dcf8a438ffbd2147ca7175e6d5513c3d102771d50be33977abe79f6ed593.png",
+      "sha256": "0f98dcf8a438ffbd2147ca7175e6d5513c3d102771d50be33977abe79f6ed593",
+      "bytes": 96808,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_looksmaxing.png",
+      "path": "assets/filters/2ebad78c1e1f8e93a2c768e9d454f56c55630accc42b6e9e09749f1c7828254d.png",
+      "sha256": "2ebad78c1e1f8e93a2c768e9d454f56c55630accc42b6e9e09749f1c7828254d",
+      "bytes": 75524,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_love_bug.png",
+      "path": "assets/filters/1bfc02c4ef9b333ea53b620cad1446f06b49fa20e7694f274a972faf48b11683.png",
+      "sha256": "1bfc02c4ef9b333ea53b620cad1446f06b49fa20e7694f274a972faf48b11683",
+      "bytes": 44578,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_lucky_face.png",
+      "path": "assets/filters/dfa2dc9e6d1af69ee1aea981b73a9111256fc0542612a2824ad9172836464e4d.png",
+      "sha256": "dfa2dc9e6d1af69ee1aea981b73a9111256fc0542612a2824ad9172836464e4d",
+      "bytes": 56212,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_mohawk.png",
+      "path": "assets/filters/baa6159ca12e4204535ddf682a75baec966ffed239432e4e7212ba45d3735b6a.png",
+      "sha256": "baa6159ca12e4204535ddf682a75baec966ffed239432e4e7212ba45d3735b6a",
+      "bytes": 34720,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_orange_wig.png",
+      "path": "assets/filters/3320f5b13ad2c7060a4370c11b6d904f26a14786214bf768be91e59800449fed.png",
+      "sha256": "3320f5b13ad2c7060a4370c11b6d904f26a14786214bf768be91e59800449fed",
+      "bytes": 40742,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_pm2.png",
+      "path": "assets/filters/fe2723d1ed0cdaa42cedd9532d55c9a5ce0631251fed55bda38a23650808bc23.png",
+      "sha256": "fe2723d1ed0cdaa42cedd9532d55c9a5ce0631251fed55bda38a23650808bc23",
+      "bytes": 27606,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_princess.png",
+      "path": "assets/filters/b3a8f49e4da65f16b9c4532a48b479703b172e6da31d0b9495a8b49ecb85ecb2.png",
+      "sha256": "b3a8f49e4da65f16b9c4532a48b479703b172e6da31d0b9495a8b49ecb85ecb2",
+      "bytes": 27920,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_santa.png",
+      "path": "assets/filters/764cec959c99196f6ced261cdb54488c56e7b8063c8b7bc546a67bc7e92ad6b7.png",
+      "sha256": "764cec959c99196f6ced261cdb54488c56e7b8063c8b7bc546a67bc7e92ad6b7",
+      "bytes": 71694,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_slimed.png",
+      "path": "assets/filters/c3778ff87cd931cd18a40ef186026814ca0d0181938707f3cb2b0ad832af4e14.png",
+      "sha256": "c3778ff87cd931cd18a40ef186026814ca0d0181938707f3cb2b0ad832af4e14",
+      "bytes": 74003,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_sticker_face.png",
+      "path": "assets/filters/ba20ca7cd0e9cf5bdbc8d67daec9ba295fcbc74d93864fc7ead7d2657e8b084e.png",
+      "sha256": "ba20ca7cd0e9cf5bdbc8d67daec9ba295fcbc74d93864fc7ead7d2657e8b084e",
+      "bytes": 67736,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_sweat_hearts.png",
+      "path": "assets/filters/036ca77f6a73a3c8bd90a1ce94e92bebba80d5cda8d409ac7852746df95b3b81.png",
+      "sha256": "036ca77f6a73a3c8bd90a1ce94e92bebba80d5cda8d409ac7852746df95b3b81",
+      "bytes": 44269,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_tatted.png",
+      "path": "assets/filters/a73de88976fb8e204ac12b21ccc6799250457226c97277a5959b908252665118.png",
+      "sha256": "a73de88976fb8e204ac12b21ccc6799250457226c97277a5959b908252665118",
+      "bytes": 107941,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_toothless.png",
+      "path": "assets/filters/3023b8a1aa11f3d0c43d4f064a47618dc582ae6e7383867a3eb46ea5fb0247fb.png",
+      "sha256": "3023b8a1aa11f3d0c43d4f064a47618dc582ae6e7383867a3eb46ea5fb0247fb",
+      "bytes": 68949,
+      "generatedFallback": false
+    },
+    {
+      "source": "https://uplocket.io.vn/uploads/stickers/stk_dio_wedding.png",
+      "path": "assets/filters/ccd2eb49eaf4644e57f53c6d03394f35cab8be065b7c846d95977673be2add10.png",
+      "sha256": "ccd2eb49eaf4644e57f53c6d03394f35cab8be065b7c846d95977673be2add10",
+      "bytes": 29809,
+      "generatedFallback": false
+    }
+  ]
+}
