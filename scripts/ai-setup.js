@@ -128,7 +128,9 @@
         var headers = $request.headers || {};
         var originHeader = "";
         Object.keys(headers).forEach(function (key) { if (key.toLowerCase() === "origin") originHeader = String(headers[key]); });
-        if (originHeader && originHeader !== origin && originHeader !== origin + ":80") return finish(403, "Nguồn biểu mẫu không hợp lệ.");
+        // Safari may send Origin: null for a locally synthesized Shadowrocket page.
+        // Allow this opaque origin only alongside the one-time nonce check below.
+        if (originHeader && originHeader !== origin && originHeader !== origin + ":80" && originHeader !== "null") return finish(403, "Nguồn biểu mẫu không hợp lệ.");
         if (typeof $request.body !== "string" || $request.body.length > 8192) return finish(400, "Biểu mẫu không hợp lệ.");
         var form = parseForm($request.body);
         if (!form.nonce || form.nonce !== read(nonceKey)) return finish(403, "Hãy mở lại trang cấu hình rồi thử lại.");
